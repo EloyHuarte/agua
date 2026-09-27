@@ -251,6 +251,14 @@
   .modal-bg.show .modal{ transform:translateY(0); }
   .modal-handle{ width:38px; height:4px; border-radius:10px; background:rgba(255,255,255,0.18); margin:8px auto 14px; }
   .modal h3{ margin:4px 0 14px; font-size:19px; }
+  .modal-title-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+  .modal-title-row h3{ margin:0; }
+  .save-btn{
+    border:none; border-radius:100px; padding:9px 18px; font-weight:700; font-size:13.5px; cursor:pointer;
+    color:#04212f; background:linear-gradient(135deg, var(--success), #059669);
+    box-shadow:0 6px 16px rgba(52,211,153,0.25); display:flex; align-items:center; gap:5px;
+  }
+  .save-btn:active{ transform:scale(0.95); }
   .field{ margin-bottom:16px; }
   .field label{ display:block; font-size:12.5px; color:var(--text-dim); margin-bottom:7px; font-weight:600; }
   .field input[type=text], .field input[type=number]{
@@ -292,6 +300,89 @@
   .share-glyph{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:5px; background:rgba(56,189,248,0.22); vertical-align:-4px; margin:0 2px; }
 
   .empty{ text-align:center; padding:30px 10px; color:var(--text-dim2); font-size:13px; }
+
+  /* ---------------- Level card ---------------- */
+  .level-card{ display:flex; flex-direction:column; gap:12px; }
+  .level-top{ display:flex; align-items:center; gap:14px; }
+  .level-emoji{
+    width:52px; height:52px; border-radius:16px; flex:0 0 auto;
+    background:linear-gradient(135deg, rgba(129,140,248,0.22), rgba(56,189,248,0.14));
+    border:1px solid rgba(129,140,248,0.32);
+    display:flex; align-items:center; justify-content:center; font-size:26px;
+  }
+  .level-info{ min-width:0; }
+  .level-name{ font-size:15.5px; font-weight:800; }
+  .level-sub{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+  .level-bar{ height:9px; border-radius:100px; background:rgba(255,255,255,0.07); overflow:hidden; }
+  .level-bar-fill{ height:100%; border-radius:100px; background:linear-gradient(90deg, var(--indigo), var(--accent2)); width:0%; transition:width 0.9s cubic-bezier(.22,1,.36,1); }
+  .level-next{ font-size:11.5px; color:var(--text-dim2); }
+
+  /* ---------------- Streak / record / freeze ---------------- */
+  .streak-row{ display:flex; margin-bottom:12px; }
+  .streak-stat{ flex:1; text-align:center; }
+  .streak-stat:first-child{ border-right:1px solid rgba(255,255,255,0.08); }
+  .streak-stat .v{ font-size:24px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:4px; }
+  .streak-stat .l{ font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .record-tag{ font-size:14px; }
+  .freeze-info{
+    text-align:center; font-size:11.5px; color:var(--text-dim); margin-bottom:14px;
+    background:rgba(255,255,255,0.04); border-radius:100px; padding:7px 10px;
+  }
+  .freeze-info.used{ color:var(--text-dim2); }
+  .share-btn{ margin-top:16px; display:flex; align-items:center; justify-content:center; gap:8px; }
+
+  /* ---------------- Large buttons mode (accesibilidad) ---------------- */
+  body.large-buttons .quick-grid{ grid-template-columns:repeat(2,1fr); gap:14px; }
+  body.large-buttons .quick-btn{ padding:24px 8px 20px; border-radius:24px; gap:8px; }
+  body.large-buttons .quick-btn .e{ font-size:38px; }
+  body.large-buttons .quick-btn .l{ font-size:16px; }
+  body.large-buttons .quick-btn .v{ font-size:18px; font-weight:800; }
+  body.large-buttons .custom-row{ gap:12px; flex-direction:column; }
+  body.large-buttons .custom-input{ font-size:19px; padding:16px 16px; border-radius:18px; }
+  body.large-buttons .custom-row .btn{ font-size:17px; padding:16px 22px; border-radius:18px; width:100%; }
+  body.large-buttons .undo{ font-size:15px; }
+  body.large-buttons .ring-center .ml{ font-size:52px; }
+  body.large-buttons .ring-center .amount{ font-size:16px; }
+  body.large-buttons .ring-center .goal{ font-size:14.5px; }
+  body.large-buttons .ring-center .pct{ font-size:13.5px; padding:4px 12px; }
+  body.large-buttons .section-title{ font-size:14.5px; }
+  body.large-buttons nav.bottom button{ padding:11px 24px; font-size:12.5px; }
+  body.large-buttons nav.bottom button .ic{ font-size:22px; }
+
+  /* ---------------- Onboarding ---------------- */
+  .onboard{
+    width:100%; max-width:480px; background:linear-gradient(180deg, #0d1730, #08101f);
+    border:1px solid var(--card-brd-hi);
+    border-radius:28px; padding:30px 24px calc(28px + var(--safe-bottom));
+    max-height:88vh; overflow-y:auto;
+  }
+  .onboard-emoji{ font-size:44px; text-align:center; margin-bottom:6px; }
+  .onboard h2{ text-align:center; font-size:21px; margin:0 0 6px; }
+  .onboard .sub{ text-align:center; color:var(--text-dim); font-size:13.5px; margin:0 0 22px; line-height:1.4; }
+  .onboard input[type=text]{
+    width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--card-brd);
+    border-radius:16px; padding:15px 16px; color:var(--text); font-size:17px; font-weight:600;
+    text-align:center; margin-bottom:18px;
+  }
+  .size-options{ display:flex; gap:12px; margin-bottom:22px; }
+  .size-opt{
+    flex:1; border:1.5px solid var(--card-brd); border-radius:20px; padding:18px 10px;
+    display:flex; flex-direction:column; align-items:center; gap:10px; cursor:pointer;
+    background:rgba(255,255,255,0.03); transition:border-color .15s ease, background .15s ease;
+  }
+  .size-opt.sel{ border-color:var(--accent2); background:rgba(56,189,248,0.1); }
+  .size-opt .prev{ display:flex; align-items:center; justify-content:center; gap:4px; background:rgba(255,255,255,0.06); border-radius:12px; padding:10px; width:100%; }
+  .size-opt.grande .prev{ padding:16px 8px; }
+  .size-opt .prev .swatch{ background:rgba(56,189,248,0.16); border:1px solid rgba(56,189,248,0.3); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .size-opt.normal .prev .swatch{ width:26px; height:26px; font-size:13px; }
+  .size-opt.grande .prev .swatch{ width:42px; height:42px; font-size:20px; }
+  .size-opt .lbl{ font-size:13.5px; font-weight:700; }
+  .size-opt .desc{ font-size:11px; color:var(--text-dim2); text-align:center; }
+  .onboard-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:18px; }
+  .onboard-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.15); }
+  .onboard-dots span.on{ background:var(--accent2); width:16px; border-radius:4px; }
+  .onboard-step{ display:none; }
+  .onboard-step.active{ display:block; animation:fadeIn .3s ease; }
 </style>
 </head>
 <body>
@@ -304,7 +395,7 @@
 
   <header>
     <div class="greeting">
-      <div class="hi">Hola, <span id="userName">Rosana</span> 💧</div>
+      <div class="hi">Hola<span id="userNameWrap">, <span id="userName"></span></span> 💧</div>
       <div class="date" id="todayLabel">—</div>
     </div>
     <div class="header-actions">
@@ -361,10 +452,36 @@
       </div>
       <div class="undo-row"><button class="undo" id="undoBtn" style="visibility:hidden;">Deshacer último registro</button></div>
 
+      <div class="section-title">Nivel</div>
+      <div class="card level-card">
+        <div class="level-top">
+          <div class="level-emoji" id="levelEmoji">💧</div>
+          <div class="level-info">
+            <div class="level-name" id="levelName">Gota novata</div>
+            <div class="level-sub" id="levelSub">0 L de por vida</div>
+          </div>
+        </div>
+        <div class="level-bar"><div class="level-bar-fill" id="levelBarFill"></div></div>
+        <div class="level-next" id="levelNext"></div>
+      </div>
+
       <div class="section-title">Rachas e insignias</div>
       <div class="card">
+        <div class="streak-row">
+          <div class="streak-stat">
+            <div class="v" id="streakValBig">0</div>
+            <div class="l">Racha actual 🔥</div>
+          </div>
+          <div class="streak-stat">
+            <div class="v" id="recordVal">0<span id="recordTag" class="record-tag" style="display:none;">🏆</span></div>
+            <div class="l">Récord histórico</div>
+          </div>
+        </div>
+        <div class="freeze-info" id="freezeInfo">❄️ Comodín de racha disponible este mes</div>
         <div class="badges-row" id="badgesRow"></div>
       </div>
+
+      <button class="btn ghost full share-btn" id="shareBtn">📤 Compartir tarjeta</button>
     </section>
 
     <!-- HISTORY -->
@@ -392,15 +509,52 @@
   </div>
 </nav>
 
+<!-- ONBOARDING MODAL (primera vez) -->
+<div class="modal-bg" id="onboardModal">
+  <div class="onboard">
+    <div class="onboard-dots"><span id="dot1" class="on"></span><span id="dot2"></span></div>
+
+    <div class="onboard-step active" id="onboardStep1">
+      <div class="onboard-emoji">💧</div>
+      <h2>¡Hola!</h2>
+      <p class="sub">¿Cómo te llamas? Así personalizamos tu app de agua.</p>
+      <input type="text" id="onbName" placeholder="Tu nombre" maxlength="30" autocomplete="given-name">
+      <button class="btn full" id="onbNext1">Continuar</button>
+    </div>
+
+    <div class="onboard-step" id="onboardStep2">
+      <div class="onboard-emoji">🔍</div>
+      <h2>Tamaño de los botones</h2>
+      <p class="sub">Elige el que veas más cómodo. Podrás cambiarlo luego en Ajustes.</p>
+      <div class="size-options" id="onbSizeOptions">
+        <div class="size-opt normal sel" data-size="normal">
+          <div class="prev"><div class="swatch">🥛</div><div class="swatch">🧉</div></div>
+          <div class="lbl">Normal</div>
+          <div class="desc">Como una app normal</div>
+        </div>
+        <div class="size-opt grande" data-size="large">
+          <div class="prev"><div class="swatch">🥛</div></div>
+          <div class="lbl">Grande</div>
+          <div class="desc">Botones más grandes, fáciles de ver y tocar</div>
+        </div>
+      </div>
+      <button class="btn full" id="onbFinish">Empezar</button>
+    </div>
+  </div>
+</div>
+
 <!-- SETTINGS MODAL -->
 <div class="modal-bg" id="settingsModal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h3>Ajustes</h3>
+    <div class="modal-title-row">
+      <h3>Ajustes</h3>
+      <button class="save-btn" id="settingsSave">✓ Guardar</button>
+    </div>
 
     <div class="field">
       <label>Nombre</label>
-      <input type="text" id="setName" placeholder="Rosana">
+      <input type="text" id="setName" placeholder="Tu nombre">
     </div>
 
     <div class="field">
@@ -417,9 +571,46 @@
     <div class="divider"></div>
 
     <div class="field">
+      <label>Tamaño de botones</label>
+      <div class="size-options" id="setSizeOptions">
+        <div class="size-opt normal" data-size="normal">
+          <div class="prev"><div class="swatch">🥛</div><div class="swatch">🧉</div></div>
+          <div class="lbl">Normal</div>
+          <div class="desc">Como ahora</div>
+        </div>
+        <div class="size-opt grande" data-size="large">
+          <div class="prev"><div class="swatch">🥛</div></div>
+          <div class="lbl">Grande</div>
+          <div class="desc">Más fácil de ver y tocar</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
       <label>Botones rápidos</label>
       <div id="qbList"></div>
       <button class="btn ghost sm" id="qbAdd" style="margin-top:6px;">+ Añadir botón</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
+      <div class="switch-row">
+        <div>
+          <div class="lab">Sonidos</div>
+          <div class="sub">Un pequeño sonido al añadir agua y al alcanzar hitos</div>
+        </div>
+        <div class="switch" id="soundSwitch"></div>
+      </div>
+      <div class="switch-row" style="margin-top:12px;" id="vibrateRow">
+        <div>
+          <div class="lab">Vibración</div>
+          <div class="sub">Vibra al registrar agua y al completar el objetivo (según el móvil)</div>
+        </div>
+        <div class="switch" id="vibrateSwitch"></div>
+      </div>
     </div>
 
     <div class="divider"></div>
@@ -487,8 +678,12 @@
   const SET_KEY = "agua:settings";
 
   const DEFAULT_SETTINGS = {
-    name: "Rosana",
+    name: "",
     goal: 2000,
+    buttonSize: "normal",
+    onboarded: false,
+    sound: true,
+    vibrate: true,
     buttons: [
       {e:"🥛", l:"Vaso", ml:200},
       {e:"🧉", l:"Taza", ml:250},
@@ -552,7 +747,8 @@
 
   /* ---------------- Render: header/date ---------------- */
   function renderHeader(){
-    userName.textContent = settings.name || "tú";
+    userName.textContent = settings.name || "";
+    $("userNameWrap").style.display = settings.name ? "inline" : "none";
     const d = new Date();
     const fmt = d.toLocaleDateString("es-ES", { weekday:"long", day:"numeric", month:"long" });
     todayLabel.textContent = fmt;
@@ -598,26 +794,100 @@
     }
   }
 
-  /* ---------------- Streak ---------------- */
+  /* ---------------- Streak (con comodín mensual) ---------------- */
+  const FREEZE_KEY = "agua:freezes";
+  function getFreezeLog(){ try{ return JSON.parse(localStorage.getItem(FREEZE_KEY))||{}; }catch(e){ return {}; } }
+  function saveFreezeLog(f){ localStorage.setItem(FREEZE_KEY, JSON.stringify(f)); }
+
   function computeStreak(){
     const goal = settings.goal || 2000;
+    const keys = Object.keys(days);
+    const todayK = todayKey();
+    getDay(todayK); // asegura que hoy exista en days
+    if(!keys.length) return 0;
+    const earliest = Object.keys(days).reduce((a,b)=> a<b?a:b);
+
+    const freezeLog = getFreezeLog();
+    let changed = false;
     let streak = 0;
     let cursor = new Date();
-    // include today if already met
-    const todayD = getDay(todayKey(cursor));
-    if(todayD.ml >= goal){ streak = 1; cursor = addDays(cursor,-1); }
-    else { cursor = addDays(cursor,-1); }
+
+    if(days[todayK] && days[todayK].ml >= goal) streak = 1;
+    cursor = addDays(cursor,-1);
+
     while(true){
       const k = todayKey(cursor);
+      if(k < earliest) break;
       const d = days[k];
-      if(d && d.ml >= goal){ streak++; cursor = addDays(cursor,-1); }
-      else break;
+      const met = d && d.ml >= goal;
+      if(met){ streak++; cursor = addDays(cursor,-1); continue; }
+      const monthKey = k.slice(0,7);
+      if(!freezeLog[monthKey]){
+        freezeLog[monthKey] = true; changed = true;
+        cursor = addDays(cursor,-1);
+        continue;
+      }
+      break;
     }
+    if(changed) saveFreezeLog(freezeLog);
     return streak;
   }
 
+  const RECORD_KEY = "agua:record";
+  function getRecord(){ return parseInt(localStorage.getItem(RECORD_KEY)||"0",10); }
+  function updateRecord(current){
+    const r = getRecord();
+    if(current > r){ localStorage.setItem(RECORD_KEY, String(current)); return current; }
+    return r;
+  }
+
   function renderStreak(){
-    streakVal.textContent = computeStreak();
+    const current = computeStreak();
+    streakVal.textContent = current;
+    $("streakValBig").textContent = current;
+    const record = updateRecord(current);
+    $("recordVal").firstChild.textContent = record;
+    $("recordTag").style.display = (record>0 && current>=record) ? "inline" : "none";
+
+    const freezeLog = getFreezeLog();
+    const mk = todayKey().slice(0,7);
+    const used = !!freezeLog[mk];
+    const fi = $("freezeInfo");
+    fi.textContent = used ? "❄️ Comodín de racha ya usado este mes" : "❄️ Comodín de racha disponible este mes (perdona un día sin romper la racha)";
+    fi.classList.toggle("used", used);
+  }
+
+  /* ---------------- Nivel (agua acumulada de por vida) ---------------- */
+  const LEVELS = [
+    { ml:0,       name:"Gota novata",        emoji:"💧" },
+    { ml:20000,   name:"Aprendiz de mar",     emoji:"🌱" },
+    { ml:60000,   name:"Nadadora constante",  emoji:"🌊" },
+    { ml:180000,  name:"Maestra del agua",    emoji:"👑" },
+    { ml:400000,  name:"Leyenda acuática",    emoji:"💎" },
+    { ml:730000,  name:"Fuente infinita",     emoji:"♾️" }
+  ];
+  function totalLifetimeMl(){
+    return Object.values(days).reduce((sum,d)=> sum + (d.ml||0), 0);
+  }
+  function renderLevel(){
+    const total = totalLifetimeMl();
+    let idx = 0;
+    for(let i=0;i<LEVELS.length;i++){ if(total >= LEVELS[i].ml) idx = i; }
+    const cur = LEVELS[idx];
+    const next = LEVELS[idx+1];
+    $("levelEmoji").textContent = cur.emoji;
+    $("levelName").textContent = cur.name;
+    const liters = (total/1000);
+    $("levelSub").textContent = liters.toLocaleString("es-ES",{maximumFractionDigits:1}) + " L de por vida";
+    if(next){
+      const span = next.ml - cur.ml;
+      const pct = Math.max(0, Math.min(100, ((total-cur.ml)/span)*100));
+      $("levelBarFill").style.width = pct + "%";
+      $("levelNext").textContent = Math.round((next.ml-total)/1000).toLocaleString("es-ES") + " L para \"" + next.name + "\" " + next.emoji;
+    } else {
+      $("levelBarFill").style.width = "100%";
+      $("levelNext").textContent = "¡Nivel máximo alcanzado! " + cur.emoji;
+    }
   }
 
   /* ---------------- Badges ---------------- */
@@ -729,6 +999,51 @@
   animBubbles();
 
   /* ---------------- Add water ---------------- */
+  /* ---------------- Sonidos y vibración ---------------- */
+  let audioCtx = null;
+  function getAudioCtx(){
+    if(!settings.sound) return null;
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+      catch(e){ return null; }
+    }
+    if(audioCtx.state === "suspended"){ audioCtx.resume().catch(()=>{}); }
+    return audioCtx;
+  }
+  function playTone(freq, duration, type, startDelay, peak){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const t0 = ctx.currentTime + (startDelay||0);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(peak!=null?peak:0.18, t0+0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0+duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0+duration+0.03);
+  }
+  function soundPlop(){
+    if(!settings.sound) return;
+    playTone(520, 0.13, "sine", 0, 0.16);
+    playTone(340, 0.16, "sine", 0.035, 0.10);
+  }
+  function soundMilestone(){
+    if(!settings.sound) return;
+    playTone(660, 0.12, "sine", 0, 0.14);
+    playTone(880, 0.18, "sine", 0.10, 0.14);
+  }
+  function soundComplete(){
+    if(!settings.sound) return;
+    [523.25,659.25,783.99,1046.5].forEach((f,i)=> playTone(f, 0.24, "sine", i*0.1, 0.16));
+  }
+  function vibrate(pattern){
+    if(!settings.vibrate) return;
+    if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
+  }
+
   function checkMilestones(day, prevMl, goal){
     const marks = [25,50,75,100];
     marks.forEach(m=>{
@@ -737,9 +1052,13 @@
         day.milestones.push(m);
         if(m===100){
           toast("🎉 ¡Objetivo del día completado!");
+          soundComplete();
+          vibrate([40,30,40,30,90]);
           if(!day.celebrated){ fireConfetti(); day.celebrated = true; }
         } else {
           toast("💧 Vas por el " + m + "%");
+          soundMilestone();
+          vibrate([12,25,12]);
         }
       }
     });
@@ -750,9 +1069,10 @@
     const k = todayKey();
     const day = getDay(k);
     const prevMl = day.ml;
-    const goalBefore = computeStreak();
     day.ml += ml;
     day.logs.push({ t: Date.now(), ml });
+    soundPlop();
+    vibrate(15);
     checkMilestones(day, prevMl, settings.goal||2000);
     saveDays(days);
     renderAll();
@@ -882,6 +1202,130 @@
     `;
   }
 
+  /* ---------------- Compartir tarjeta ---------------- */
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  async function buildShareCard(){
+    const W = 1080, H = 1350;
+    const cnv = document.createElement("canvas");
+    cnv.width = W; cnv.height = H;
+    const c = cnv.getContext("2d");
+
+    // fondo degradado, a juego con el tema de la app
+    const bg = c.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,"#0a1226");
+    bg.addColorStop(0.5,"#0e1b36");
+    bg.addColorStop(1,"#050810");
+    c.fillStyle = bg; c.fillRect(0,0,W,H);
+
+    // resplandor ambiental
+    const glow = c.createRadialGradient(W*0.18,H*0.08,0,W*0.18,H*0.08,W*0.9);
+    glow.addColorStop(0,"rgba(56,189,248,0.16)");
+    glow.addColorStop(1,"rgba(56,189,248,0)");
+    c.fillStyle = glow; c.fillRect(0,0,W,H);
+    const glow2 = c.createRadialGradient(W*0.85,H*0.95,0,W*0.85,H*0.95,W*0.7);
+    glow2.addColorStop(0,"rgba(129,140,248,0.14)");
+    glow2.addColorStop(1,"rgba(129,140,248,0)");
+    c.fillStyle = glow2; c.fillRect(0,0,W,H);
+
+    // cabecera
+    c.textAlign = "center";
+    c.fillStyle = "#7dd3fc";
+    c.font = "700 46px -apple-system, sans-serif";
+    c.fillText("💧  AGUA", W/2, 130);
+
+    const k = todayKey();
+    const day = getDay(k);
+    const goal = settings.goal || 2000;
+    const pct = Math.min(1, day.ml/goal);
+    const liters = (day.ml/1000);
+    const goalLiters = (goal/1000);
+
+    // anillo de progreso
+    const ringCx = W/2, ringCy = 430, ringR = 230;
+    c.lineWidth = 34; c.lineCap = "round";
+    c.strokeStyle = "rgba(255,255,255,0.08)";
+    c.beginPath(); c.arc(ringCx,ringCy,ringR,0,Math.PI*2); c.stroke();
+    const ringGrad = c.createLinearGradient(ringCx-ringR,ringCy-ringR,ringCx+ringR,ringCy+ringR);
+    ringGrad.addColorStop(0,"#7dd3fc"); ringGrad.addColorStop(1,"#0ea5e9");
+    c.strokeStyle = ringGrad;
+    c.beginPath();
+    c.arc(ringCx,ringCy,ringR, -Math.PI/2, -Math.PI/2 + Math.PI*2*pct);
+    c.stroke();
+
+    c.fillStyle = "#eaf2ff";
+    c.font = "800 108px -apple-system, sans-serif";
+    c.fillText(liters.toLocaleString("es-ES",{maximumFractionDigits:1}) + " L", ringCx, ringCy+18);
+    c.fillStyle = "#8b9ab3";
+    c.font = "600 34px -apple-system, sans-serif";
+    c.fillText("hoy · de " + goalLiters.toLocaleString("es-ES",{maximumFractionDigits:1}) + " L (" + Math.round(pct*100) + "%)", ringCx, ringCy+70);
+
+    // fila de estadísticas
+    const stats = [
+      { v: computeStreak() + "", l: "Racha 🔥" },
+      { v: getRecord() + "", l: "Récord 🏆" },
+      { v: (totalLifetimeMl()/1000).toLocaleString("es-ES",{maximumFractionDigits:0}) + " L", l: "De por vida" }
+    ];
+    const rowY = 800, rowH = 190, gap = 24, colW = (W-80-gap*2)/3;
+    stats.forEach((s,i)=>{
+      const x = 40 + i*(colW+gap);
+      c.fillStyle = "rgba(255,255,255,0.045)";
+      roundRect(c, x, rowY, colW, rowH, 24); c.fill();
+      c.strokeStyle = "rgba(255,255,255,0.08)"; c.lineWidth = 2;
+      roundRect(c, x, rowY, colW, rowH, 24); c.stroke();
+      c.fillStyle = "#eaf2ff";
+      c.font = "800 56px -apple-system, sans-serif";
+      c.fillText(s.v, x+colW/2, rowY+90);
+      c.fillStyle = "#8b9ab3";
+      c.font = "600 26px -apple-system, sans-serif";
+      c.fillText(s.l, x+colW/2, rowY+135);
+    });
+
+    // pie
+    c.fillStyle = "#5d6c85";
+    c.font = "600 30px -apple-system, sans-serif";
+    const name = settings.name ? settings.name : "";
+    const dateStr = new Date().toLocaleDateString("es-ES",{day:"numeric",month:"long"});
+    c.fillText((name ? name + " · " : "") + dateStr, W/2, H-70);
+
+    return new Promise(resolve=> cnv.toBlob(resolve, "image/png", 0.95));
+  }
+
+  $("shareBtn").addEventListener("click", async ()=>{
+    $("shareBtn").disabled = true;
+    const originalText = $("shareBtn").textContent;
+    $("shareBtn").textContent = "Generando…";
+    try{
+      const blob = await buildShareCard();
+      const file = new File([blob], "agua-hoy.png", { type:"image/png" });
+      if(navigator.canShare && navigator.canShare({ files:[file] })){
+        await navigator.share({ files:[file], title:"Mi progreso de agua", text:"💧 Mi progreso de hidratación de hoy" });
+      } else if(navigator.share){
+        await navigator.share({ title:"Mi progreso de agua", text:"💧 Mi progreso de hidratación de hoy" });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "agua-hoy.png";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=> URL.revokeObjectURL(url), 4000);
+        toast("📥 Tarjeta descargada — ya puedes compartirla");
+      }
+    }catch(e){
+      if(e && e.name !== "AbortError") toast("No se pudo compartir la tarjeta");
+    }finally{
+      $("shareBtn").disabled = false;
+      $("shareBtn").textContent = originalText;
+    }
+  });
+
   /* ---------------- Navigation ---------------- */
   document.querySelectorAll(".nav-btn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
@@ -897,11 +1341,34 @@
   function openModal(id){ $(id).classList.add("show"); }
   function closeModal(id){ $(id).classList.remove("show"); }
 
+  function applyButtonSize(){
+    document.body.classList.toggle("large-buttons", settings.buttonSize === "large");
+  }
+
+  function updateSizeOptions(container){
+    container.querySelectorAll(".size-opt").forEach(opt=>{
+      opt.classList.toggle("sel", opt.dataset.size === settings.buttonSize);
+    });
+  }
+
+  $("setSizeOptions").querySelectorAll(".size-opt").forEach(opt=>{
+    opt.addEventListener("click", ()=>{
+      settings.buttonSize = opt.dataset.size;
+      saveSettings(settings);
+      applyButtonSize();
+      updateSizeOptions($("setSizeOptions"));
+    });
+  });
+
   $("openSettings").addEventListener("click", ()=>{
     $("setName").value = settings.name;
     $("setGoal").value = settings.goal;
     updateGoalPresets();
+    updateSizeOptions($("setSizeOptions"));
     renderQBList();
+    $("soundSwitch").classList.toggle("on", settings.sound);
+    $("vibrateSwitch").classList.toggle("on", settings.vibrate);
+    $("vibrateRow").style.display = ("vibrate" in navigator) ? "flex" : "none";
     $("remSwitch").classList.toggle("on", settings.reminder.enabled);
     $("remOptions").style.display = settings.reminder.enabled ? "block" : "none";
     $("remInterval").value = settings.reminder.interval;
@@ -910,11 +1377,17 @@
     setupReminderUI();
     openModal("settingsModal");
   });
+  $("settingsSave").addEventListener("click", ()=>{
+    saveSettings(settings);
+    closeModal("settingsModal");
+    toast("✓ Ajustes guardados");
+    renderAll();
+  });
   document.querySelectorAll("#settingsModal, #confirmModal").forEach(m=>{
     m.addEventListener("click", (e)=>{ if(e.target === m) m.classList.remove("show"); });
   });
 
-  $("setName").addEventListener("input", (e)=>{ settings.name = e.target.value || "tú"; saveSettings(settings); renderHeader(); });
+  $("setName").addEventListener("input", (e)=>{ settings.name = e.target.value; saveSettings(settings); renderHeader(); });
   $("setGoal").addEventListener("input", (e)=>{
     const v = parseInt(e.target.value,10);
     if(v>0){ settings.goal = v; saveSettings(settings); updateGoalPresets(); renderAll(); }
@@ -963,6 +1436,19 @@
     $("remSwitch").style.opacity = blocked ? "0.4" : "1";
     $("remSwitch").style.pointerEvents = blocked ? "none" : "auto";
   }
+
+  $("soundSwitch").addEventListener("click", ()=>{
+    settings.sound = !settings.sound;
+    saveSettings(settings);
+    $("soundSwitch").classList.toggle("on", settings.sound);
+    if(settings.sound) soundPlop();
+  });
+  $("vibrateSwitch").addEventListener("click", ()=>{
+    settings.vibrate = !settings.vibrate;
+    saveSettings(settings);
+    $("vibrateSwitch").classList.toggle("on", settings.vibrate);
+    if(settings.vibrate) vibrate(15);
+  });
 
   $("remSwitch").addEventListener("click", async ()=>{
     if(isIOS && !isStandalone){ toast("📲 Instala primero la app (Compartir → Añadir a pantalla de inicio)"); return; }
@@ -1072,17 +1558,56 @@
     });
   }
 
+  /* ---------------- Onboarding (primera vez) ---------------- */
+  let onbSelectedSize = "normal";
+  function initOnboarding(){
+    if(settings.onboarded) return;
+    $("onbName").value = settings.name || "";
+    updateSizeOptions($("onbSizeOptions"));
+    onbSelectedSize = settings.buttonSize || "normal";
+    openModal("onboardModal");
+  }
+  $("onbNext1").addEventListener("click", ()=>{
+    const v = $("onbName").value.trim();
+    settings.name = v;
+    saveSettings(settings);
+    $("onboardStep1").classList.remove("active");
+    $("onboardStep2").classList.add("active");
+    $("dot1").classList.remove("on");
+    $("dot2").classList.add("on");
+  });
+  $("onbName").addEventListener("keydown", (e)=>{ if(e.key === "Enter") $("onbNext1").click(); });
+  $("onbSizeOptions").querySelectorAll(".size-opt").forEach(opt=>{
+    opt.addEventListener("click", ()=>{
+      onbSelectedSize = opt.dataset.size;
+      settings.buttonSize = onbSelectedSize;
+      updateSizeOptions($("onbSizeOptions"));
+      applyButtonSize();
+    });
+  });
+  $("onbFinish").addEventListener("click", ()=>{
+    settings.buttonSize = onbSelectedSize;
+    settings.onboarded = true;
+    saveSettings(settings);
+    applyButtonSize();
+    closeModal("onboardModal");
+    renderAll();
+  });
+
   /* ---------------- Render all ---------------- */
   function renderAll(){
     renderHeader();
     renderQuickButtons();
     renderRing();
     renderStreak();
+    renderLevel();
     renderBadges();
     if($("view-history").classList.contains("active")){ drawChart(); renderSummary(); }
   }
 
+  applyButtonSize();
   renderAll();
+  initOnboarding();
 
   // midnight refresh so date/ring roll over without needing a manual reload
   (function scheduleMidnight(){
