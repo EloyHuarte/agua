@@ -59,7 +59,7 @@
     z-index:1;
     max-width:480px;
     margin:0 auto;
-    padding: calc(18px + var(--safe-top)) 18px calc(110px + var(--safe-bottom));
+    padding: calc(18px + var(--safe-top)) 18px calc(132px + var(--safe-bottom));
     min-height:100vh;
   }
 
@@ -119,12 +119,31 @@
     height:26px;
     background-repeat:repeat-x;
   }
-  .wave1{ animation: waveMove 6.5s linear infinite; opacity:0.85; }
-  .wave2{ animation: waveMove 4.2s linear infinite reverse; opacity:0.55; top:-4px; }
+  .wave1{ animation: waveMove 5.5s linear infinite; opacity:0.9; }
+  .wave2{ animation: waveMove 8s linear infinite reverse; opacity:0.5; top:-3px; }
+  .wave3{ animation: waveMove 3.2s linear infinite; opacity:0.32; top:-5px; }
   @keyframes waveMove{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
   .liquid-body{
     position:absolute; inset:0; top:22px;
     background:linear-gradient(180deg, rgba(56,189,248,0.55), rgba(14,165,233,0.85) 60%, rgba(6,120,180,0.95));
+  }
+  .liquid-body::after{
+    content:""; position:absolute; left:0; right:0; top:0; height:38%;
+    background:linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0) 100%);
+    pointer-events:none;
+  }
+  @keyframes ringIconPop{
+    0%{ opacity:0; transform:translate(-50%,-35%) scale(0.35); }
+    16%{ opacity:1; transform:translate(-50%,-95%) scale(1.18); }
+    32%{ transform:translate(-50%,-82%) scale(1); }
+    74%{ opacity:1; transform:translate(-50%,-100%) scale(1); }
+    100%{ opacity:0; transform:translate(-50%,-165%) scale(0.9); }
+  }
+  .ring-icon-pop{
+    position:absolute; top:0; left:50%; font-size:24px; line-height:1;
+    pointer-events:none; z-index:3;
+    filter:drop-shadow(0 3px 8px rgba(0,0,0,0.45));
+    animation: ringIconPop 1.3s cubic-bezier(.22,1,.36,1) forwards;
   }
   .ring-center{
     position:relative; z-index:2; text-align:center;
@@ -169,8 +188,15 @@
   .btn.full{ width:100%; }
   .btn.sm{ padding:9px 14px; font-size:13px; }
 
-  .undo-row{ display:flex; justify-content:center; margin-top:12px; }
-  .undo{ color:var(--text-dim); font-size:12.5px; background:none; border:none; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .undo-row{ display:flex; justify-content:center; margin-top:14px; }
+  .undo{
+    display:flex; align-items:center; gap:6px;
+    color:var(--text-dim); font-size:12.5px; font-weight:700;
+    background:rgba(255,255,255,0.05); border:1px solid var(--card-brd);
+    border-radius:100px; padding:9px 16px; cursor:pointer; backdrop-filter:blur(10px);
+    transition:transform .15s ease, background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .undo:active{ transform:scale(0.94); background:rgba(251,113,133,0.14); border-color:rgba(251,113,133,0.4); color:#fca5b1; }
 
   /* ---------- Cards ---------- */
   .card{
@@ -297,6 +323,19 @@
   .install-banner .txt{ flex:1; font-size:12.5px; color:var(--text-dim); line-height:1.4; }
   .install-banner .txt b{ color:var(--text); display:block; font-size:13.5px; margin-bottom:2px; }
   .install-banner .ic{ font-size:20px; flex:0 0 auto; }
+
+  .update-banner{
+    position:fixed; left:50%; top:calc(14px + var(--safe-top)); z-index:70;
+    transform:translateX(-50%) translateY(-160%);
+    display:flex; align-items:center; gap:12px;
+    background:rgba(15,23,42,0.95); border:1px solid rgba(56,189,248,0.4);
+    padding:12px 14px; border-radius:18px; box-shadow:0 12px 30px rgba(0,0,0,0.45);
+    backdrop-filter:blur(14px); width:calc(100% - 36px); max-width:420px;
+    transition:transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  .update-banner.show{ transform:translateX(-50%) translateY(0); }
+  .update-banner .txt{ flex:1; font-size:12.5px; color:var(--text-dim); line-height:1.4; }
+  .update-banner .txt b{ color:var(--text); display:block; font-size:13.5px; margin-bottom:2px; }
   .share-glyph{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:5px; background:rgba(56,189,248,0.22); vertical-align:-4px; margin:0 2px; }
 
   .empty{ text-align:center; padding:30px 10px; color:var(--text-dim2); font-size:13px; }
@@ -329,7 +368,7 @@
     background:rgba(255,255,255,0.04); border-radius:100px; padding:7px 10px;
   }
   .freeze-info.used{ color:var(--text-dim2); }
-  .share-btn{ margin-top:16px; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .share-btn{ margin:16px 0 8px; display:flex; align-items:center; justify-content:center; gap:8px; }
 
   /* ---------------- Large buttons mode (accesibilidad) ---------------- */
   body.large-buttons .quick-grid{ grid-template-columns:repeat(2,1fr); gap:14px; }
@@ -340,7 +379,9 @@
   body.large-buttons .custom-row{ gap:12px; flex-direction:column; }
   body.large-buttons .custom-input{ font-size:19px; padding:16px 16px; border-radius:18px; }
   body.large-buttons .custom-row .btn{ font-size:17px; padding:16px 22px; border-radius:18px; width:100%; }
-  body.large-buttons .undo{ font-size:15px; }
+  body.large-buttons .undo{ font-size:15px; padding:12px 20px; }
+  body.large-buttons .ring-icon-pop{ font-size:32px; }
+  body.large-buttons .app{ padding-bottom: calc(150px + var(--safe-bottom)); }
   body.large-buttons .ring-center .ml{ font-size:52px; }
   body.large-buttons .ring-center .amount{ font-size:16px; }
   body.large-buttons .ring-center .goal{ font-size:14.5px; }
@@ -391,6 +432,11 @@
 <canvas id="confetti"></canvas>
 <div id="toasts"></div>
 
+<div class="update-banner" id="updateBanner">
+  <div class="txt"><b>🔄 Nueva versión disponible</b>Toca para actualizar la app</div>
+  <button class="btn sm" id="updateBtn">Actualizar</button>
+</div>
+
 <div class="app">
 
   <header>
@@ -432,8 +478,9 @@
         <div class="liquid-disc">
           <div class="liquid-fill" id="liquidFill">
             <div class="liquid-body"></div>
-            <svg class="wave wave1" viewBox="0 0 400 26" preserveAspectRatio="none"><path d="M0,14 C50,26 100,2 150,14 C200,26 250,2 300,14 C350,26 400,2 400,14 L400,26 L0,26 Z" fill="rgba(125,211,252,0.9)"/></svg>
-            <svg class="wave wave2" viewBox="0 0 400 26" preserveAspectRatio="none"><path d="M0,14 C50,2 100,26 150,14 C200,2 250,26 300,14 C350,2 400,26 400,14 L400,26 L0,26 Z" fill="rgba(56,189,248,0.7)"/></svg>
+            <svg class="wave wave1" viewBox="0 0 400 26" preserveAspectRatio="none"><path d="M0,13 C50,26 50,0 100,13 C150,26 150,0 200,13 C250,26 250,0 300,13 C350,26 350,0 400,13 L400,26 L0,26 Z" fill="rgba(125,211,252,0.9)"/></svg>
+            <svg class="wave wave2" viewBox="0 0 400 26" preserveAspectRatio="none"><path d="M0,13 C50,2 50,24 100,13 C150,2 150,24 200,13 C250,2 250,24 300,13 C350,2 350,24 400,13 L400,26 L0,26 Z" fill="rgba(56,189,248,0.6)"/></svg>
+            <svg class="wave wave3" viewBox="0 0 400 26" preserveAspectRatio="none"><path d="M0,13 C25,18 25,8 50,13 C75,18 75,8 100,13 C125,18 125,8 150,13 C175,18 175,8 200,13 C225,18 225,8 250,13 C275,18 275,8 300,13 C325,18 325,8 350,13 C375,18 375,8 400,13 L400,26 L0,26 Z" fill="rgba(255,255,255,0.35)"/></svg>
           </div>
         </div>
         <div class="ring-center">
@@ -450,7 +497,7 @@
         <input class="custom-input" id="customMl" type="number" inputmode="numeric" placeholder="ml personalizados">
         <button class="btn" id="addCustomBtn">Añadir</button>
       </div>
-      <div class="undo-row"><button class="undo" id="undoBtn" style="visibility:hidden;">Deshacer último registro</button></div>
+      <div class="undo-row"><button class="undo" id="undoBtn" style="visibility:hidden;">↩️ Deshacer último registro</button></div>
 
       <div class="section-title">Nivel</div>
       <div class="card level-card">
@@ -645,6 +692,8 @@
 
     <div class="divider"></div>
 
+    <button class="btn ghost full" id="suggestBtn" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px;">💡 Enviar una sugerencia</button>
+
     <button class="btn danger full" id="resetBtn">Borrar todos los datos</button>
     <div class="hint" style="text-align:center; margin-top:14px;">Agua · datos guardados solo en este dispositivo</div>
   </div>
@@ -761,7 +810,7 @@
       const el = document.createElement("div");
       el.className = "quick-btn";
       el.innerHTML = `<span class="e">${b.e}</span><span class="l">${b.l}</span><span class="v">${b.ml} ml</span>`;
-      el.addEventListener("click", ()=> addWater(b.ml));
+      el.addEventListener("click", ()=> addWater(b.ml, b.e));
       quickGrid.appendChild(el);
     });
   }
@@ -1064,23 +1113,35 @@
     });
   }
 
-  function addWater(ml){
+  function popRingIcon(icon){
+    if(!icon) return;
+    const mark = document.createElement("div");
+    mark.className = "ring-icon-pop";
+    mark.textContent = icon;
+    liquidFill.appendChild(mark);
+    mark.addEventListener("animationend", ()=> mark.remove());
+    setTimeout(()=>{ if(mark.parentNode) mark.remove(); }, 1600);
+  }
+
+  function addWater(ml, icon){
     if(!ml || ml<=0) return;
     const k = todayKey();
     const day = getDay(k);
     const prevMl = day.ml;
     day.ml += ml;
-    day.logs.push({ t: Date.now(), ml });
+    const useIcon = icon || "💧";
+    day.logs.push({ t: Date.now(), ml, icon: useIcon });
     soundPlop();
     vibrate(15);
     checkMilestones(day, prevMl, settings.goal||2000);
     saveDays(days);
     renderAll();
+    popRingIcon(useIcon);
   }
 
   $("addCustomBtn").addEventListener("click", ()=>{
     const v = parseInt($("customMl").value, 10);
-    if(v>0){ addWater(v); $("customMl").value = ""; }
+    if(v>0){ addWater(v, "💧"); $("customMl").value = ""; }
   });
   $("customMl").addEventListener("keydown", (e)=>{
     if(e.key === "Enter") $("addCustomBtn").click();
@@ -1505,6 +1566,14 @@
   }
   setInterval(reminderTick, 60000);
 
+  /* ---------------- Sugerencias por correo ---------------- */
+  const SUGGEST_EMAIL = ["eloyhuarte", "gmail.com"].join("@");
+  $("suggestBtn").addEventListener("click", ()=>{
+    const subject = encodeURIComponent("Sugerencia app Agua");
+    const body = encodeURIComponent("Escribe aquí tu sugerencia o idea de mejora para la app:\n\n");
+    window.location.href = "mailto:" + SUGGEST_EMAIL + "?subject=" + subject + "&body=" + body;
+  });
+
   /* ---------------- Reset data ---------------- */
   let confirmAction = null;
   function askConfirm(title, body, action){
@@ -1551,10 +1620,44 @@
   });
   window.addEventListener("appinstalled", ()=> $("installBanner").classList.remove("show"));
 
-  /* ---------------- Service worker ---------------- */
+  /* ---------------- Service worker + aviso de actualización ---------------- */
   if("serviceWorker" in navigator){
+    let newWorker = null;
+    let refreshing = false;
+
+    function showUpdateBanner(){ $("updateBanner").classList.add("show"); }
+
+    function trackInstalling(worker){
+      worker.addEventListener("statechange", ()=>{
+        if(worker.state === "installed" && navigator.serviceWorker.controller){
+          newWorker = worker;
+          showUpdateBanner();
+        }
+      });
+    }
+
     window.addEventListener("load", ()=>{
-      navigator.serviceWorker.register("sw.js").catch(()=>{});
+      navigator.serviceWorker.register("sw.js").then(reg=>{
+        if(reg.waiting && navigator.serviceWorker.controller){
+          newWorker = reg.waiting;
+          showUpdateBanner();
+        }
+        if(reg.installing) trackInstalling(reg.installing);
+        reg.addEventListener("updatefound", ()=>{
+          if(reg.installing) trackInstalling(reg.installing);
+        });
+      }).catch(()=>{});
+    });
+
+    navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+      if(refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
+    $("updateBtn").addEventListener("click", ()=>{
+      if(newWorker) newWorker.postMessage({ type:"SKIP_WAITING" });
+      $("updateBanner").classList.remove("show");
     });
   }
 

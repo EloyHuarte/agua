@@ -1,4 +1,4 @@
-const CACHE_NAME = "agua-cache-v1.6";
+const CACHE_NAME = "agua-cache-v1.7";
 const ASSETS = [
   "./",
   "./index.html",
@@ -13,8 +13,10 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
+  // No se llama a skipWaiting() aquí a propósito: así la nueva versión se queda
+  // "esperando" y la app puede avisar al usuario y dejar que decida cuándo actualizar.
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
 });
 
@@ -24,6 +26,12 @@ self.addEventListener("activate", (event) => {
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("fetch", (event) => {
