@@ -1,4 +1,4 @@
-const CACHE_NAME = "agua-cache-v2.1";
+const CACHE_NAME = "agua-cache-v2.3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,7 +10,12 @@ const ASSETS = [
   "./icons/icon-512.png",
   "./icons/icon-192-maskable.png",
   "./icons/icon-512-maskable.png",
-  "./icons/chiquito-face.png"
+  "./icons/chiquito-face.png",
+  "./sounds/chiquito-grito.mp3",
+  "./sounds/chiquito-cobarde.mp3",
+  "./sounds/chiquito-cuidadin-quieto.mp3",
+  "./sounds/chiquito-hasta-luego-lucas.mp3",
+  "./sounds/chiquito-tedacuen.mp3"
 ];
 
 self.addEventListener("install", (event) => {

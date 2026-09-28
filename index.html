@@ -166,7 +166,7 @@
     box-shadow:0 0 14px rgba(74,222,128,0.4);
   }
   .chiquito-face{ display:none; margin-bottom:2px; }
-  .chiquito-face img{ height:60px; width:auto; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.45)); }
+  .chiquito-face img{ height:92px; width:auto; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.45)); }
   @keyframes chiquitoFloat{
     0%,100%{ transform:translateY(0) rotate(-2deg); }
     50%{ transform:translateY(-6px) rotate(2deg); }
@@ -1152,21 +1152,55 @@
     osc.start(t0);
     osc.stop(t0+0.45);
   }
+  // Grabaciones reales (voz de Eloy) para el Modo Chiquito, con respaldo sintetizado si algo falla.
+  const CHIQUITO_CLIPS = {
+    grito: "sounds/chiquito-grito.mp3",
+    cobarde: "sounds/chiquito-cobarde.mp3",
+    cuidadin: "sounds/chiquito-cuidadin-quieto.mp3",
+    lucas: "sounds/chiquito-hasta-luego-lucas.mp3",
+    tedacuen: "sounds/chiquito-tedacuen.mp3"
+  };
+  const chiquitoAudioCache = {};
+  function playChiquitoClip(name, fallbackPeak){
+    if(!settings.sound) return false;
+    const src = CHIQUITO_CLIPS[name];
+    if(!src) return false;
+    try{
+      let a = chiquitoAudioCache[name];
+      if(!a){
+        a = new Audio(src);
+        a.preload = "auto";
+        chiquitoAudioCache[name] = a;
+      }
+      a.currentTime = 0;
+      a.volume = 0.85;
+      const p = a.play();
+      if(p && p.catch) p.catch(()=>{ soundChiquitoGrito(0, fallbackPeak!=null?fallbackPeak:0.2); });
+      return true;
+    }catch(e){ return false; }
+  }
   function soundPlop(){
     if(!settings.sound) return;
-    if(settings.chiquito){ soundChiquitoGrito(0, 0.18); return; }
+    if(settings.chiquito){ if(!playChiquitoClip("grito", 0.18)) soundChiquitoGrito(0, 0.18); return; }
     playTone(520, 0.13, "sine", 0, 0.16);
     playTone(340, 0.16, "sine", 0.035, 0.10);
   }
-  function soundMilestone(){
+  function soundMilestone(pct){
     if(!settings.sound) return;
-    if(settings.chiquito){ soundChiquitoGrito(0, 0.24); return; }
+    if(settings.chiquito){
+      const clip = pct===25 ? "cobarde" : pct===75 ? "tedacuen" : "cuidadin";
+      if(!playChiquitoClip(clip, 0.24)) soundChiquitoGrito(0, 0.24);
+      return;
+    }
     playTone(660, 0.12, "sine", 0, 0.14);
     playTone(880, 0.18, "sine", 0.10, 0.14);
   }
   function soundComplete(){
     if(!settings.sound) return;
-    if(settings.chiquito){ soundChiquitoGrito(0, 0.28); soundChiquitoGrito(0.4, 0.24); return; }
+    if(settings.chiquito){
+      if(!playChiquitoClip("lucas", 0.28)) soundChiquitoGrito(0, 0.28);
+      return;
+    }
     [523.25,659.25,783.99,1046.5].forEach((f,i)=> playTone(f, 0.24, "sine", i*0.1, 0.16));
   }
   function vibrate(pattern){
@@ -1195,7 +1229,7 @@
           if(!day.celebrated){ fireConfetti(); day.celebrated = true; }
         } else {
           toast(msg || ("💧 Vas por el " + m + "%"));
-          soundMilestone();
+          soundMilestone(m);
           vibrate([12,25,12]);
         }
       }
@@ -1505,6 +1539,11 @@
     applyChiquitoMode();
     vibrate(settings.chiquito ? [30,40,30,40,90] : 20);
     toast(settings.chiquito ? "🕶️ ¡Fistro! Modo Chiquito activado" : "Modo Chiquito desactivado");
+    if(settings.chiquito){
+      const activationClips = ["grito","cobarde","cuidadin","lucas","tedacuen"];
+      const pick = activationClips[Math.floor(Math.random()*activationClips.length)];
+      if(!playChiquitoClip(pick, 0.24)) soundChiquitoGrito(0, 0.24);
+    }
     renderAll();
   }
   (function setupChiquitoEasterEgg(){
