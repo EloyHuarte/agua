@@ -1,4 +1,4 @@
-const CACHE_NAME = "agua-cache-v1.9";
+const CACHE_NAME = "agua-cache-v2.1";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,7 +9,8 @@ const ASSETS = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-192-maskable.png",
-  "./icons/icon-512-maskable.png"
+  "./icons/icon-512-maskable.png",
+  "./icons/chiquito-face.png"
 ];
 
 self.addEventListener("install", (event) => {

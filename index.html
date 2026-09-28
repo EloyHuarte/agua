@@ -68,6 +68,8 @@
   .greeting{ display:flex; flex-direction:column; gap:2px; }
   .greeting .hi{ font-size:22px; font-weight:700; letter-spacing:-0.02em; }
   .greeting .date{ font-size:13px; color:var(--text-dim); text-transform:capitalize; }
+  .chiquito-tag{ display:none; font-size:11px; font-weight:800; color:#facc15; margin-top:2px; }
+  body.chiquito .chiquito-tag{ display:block; animation:fadeIn .3s ease; }
   .icon-btn{
     width:44px; height:44px; border-radius:14px;
     background:var(--card); border:1px solid var(--card-brd);
@@ -96,7 +98,7 @@
     margin:6px auto 20px;
     display:flex; align-items:center; justify-content:center;
   }
-  .ring-wrap svg{ position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); filter:drop-shadow(0 0 18px rgba(56,189,248,0.18)); }
+  .ring-wrap > svg{ position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); filter:drop-shadow(0 0 18px rgba(56,189,248,0.18)); }
   .ring-track{ fill:none; stroke:rgba(255,255,255,0.06); stroke-width:14; }
   .ring-progress{
     fill:none; stroke:url(#ringGrad); stroke-width:14; stroke-linecap:round;
@@ -163,6 +165,20 @@
     background:rgba(4,20,15,0.78); color:#4ade80; border-color:rgba(74,222,128,0.55);
     box-shadow:0 0 14px rgba(74,222,128,0.4);
   }
+  .chiquito-face{ display:none; margin-bottom:2px; }
+  .chiquito-face img{ height:60px; width:auto; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.45)); }
+  @keyframes chiquitoFloat{
+    0%,100%{ transform:translateY(0) rotate(-2deg); }
+    50%{ transform:translateY(-6px) rotate(2deg); }
+  }
+  body.chiquito .chiquito-face{ display:flex; animation: fadeIn .35s ease; }
+  body.chiquito .chiquito-face img{ animation: chiquitoFloat 3.4s ease-in-out infinite; transform-origin:50% 85%; }
+  body.chiquito .ring-center .ml{ font-size:34px; }
+  @keyframes chiquitoWiggle{ 0%,100%{ transform:rotate(0deg); } 25%{ transform:rotate(-3deg); } 75%{ transform:rotate(3deg); } }
+  body.chiquito .quick-btn{ animation: chiquitoWiggle 2.6s ease-in-out infinite; }
+  body.chiquito .quick-btn:nth-child(2){ animation-delay:0.15s; }
+  body.chiquito .quick-btn:nth-child(3){ animation-delay:0.3s; }
+  body.chiquito .quick-btn:nth-child(4){ animation-delay:0.45s; }
 
   /* ---------- Quick add ---------- */
   .section-title{ font-size:13px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin:22px 0 10px 4px; display:flex; align-items:center; justify-content:space-between; }
@@ -458,6 +474,7 @@
     <div class="greeting">
       <div class="hi">Hola<span id="userNameWrap">, <span id="userName"></span></span> 💧</div>
       <div class="date" id="todayLabel">—</div>
+      <div class="chiquito-tag" id="chiquitoTag">🕶️ Modo Chiquito</div>
     </div>
     <div class="header-actions">
       <div class="streak-pill" id="streakPill">🔥 <span id="streakVal">0</span></div>
@@ -505,6 +522,9 @@
           </div>
         </div>
         <div class="ring-center">
+          <div class="chiquito-face" id="chiquitoFace" aria-hidden="true">
+            <img src="icons/chiquito-face.png" alt="" draggable="false">
+          </div>
           <div class="ml"><span id="mlNow">0</span><span>ml</span></div>
           <div class="goal">de <span id="mlGoal">2000</span> ml</div>
           <div class="pct" id="pctVal">0%</div>
@@ -760,6 +780,7 @@
     onboarded: false,
     sound: true,
     vibrate: true,
+    chiquito: false,
     buttons: [
       {e:"🥛", l:"Vaso", ml:200},
       {e:"🧉", l:"Taza", ml:250},
@@ -831,12 +852,15 @@
   }
 
   /* ---------------- Render: quick buttons ---------------- */
+  const CHIQUITO_ICONS = ["🕶️","🎉","😜","🤪","🥳","😎","🫡","🤠"];
+
   function renderQuickButtons(){
     quickGrid.innerHTML = "";
     settings.buttons.forEach((b, i)=>{
       const el = document.createElement("div");
       el.className = "quick-btn";
-      el.innerHTML = `<span class="e">${b.e}</span><span class="l">${b.l}</span><span class="v">${b.ml} ml</span>`;
+      const displayEmoji = settings.chiquito ? CHIQUITO_ICONS[i % CHIQUITO_ICONS.length] : b.e;
+      el.innerHTML = `<span class="e">${displayEmoji}</span><span class="l">${b.l}</span><span class="v">${b.ml} ml</span>`;
       el.addEventListener("click", ()=> addWater(b.ml, b.e));
       quickGrid.appendChild(el);
     });
@@ -1111,18 +1135,38 @@
     osc.start(t0);
     osc.stop(t0+duration+0.03);
   }
+  function soundChiquitoGrito(startDelay, peak){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const t0 = ctx.currentTime + (startDelay||0);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(280, t0);
+    osc.frequency.exponentialRampToValueAtTime(1300, t0+0.16);
+    osc.frequency.exponentialRampToValueAtTime(480, t0+0.34);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(peak!=null?peak:0.22, t0+0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0+0.42);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0+0.45);
+  }
   function soundPlop(){
     if(!settings.sound) return;
+    if(settings.chiquito){ soundChiquitoGrito(0, 0.18); return; }
     playTone(520, 0.13, "sine", 0, 0.16);
     playTone(340, 0.16, "sine", 0.035, 0.10);
   }
   function soundMilestone(){
     if(!settings.sound) return;
+    if(settings.chiquito){ soundChiquitoGrito(0, 0.24); return; }
     playTone(660, 0.12, "sine", 0, 0.14);
     playTone(880, 0.18, "sine", 0.10, 0.14);
   }
   function soundComplete(){
     if(!settings.sound) return;
+    if(settings.chiquito){ soundChiquitoGrito(0, 0.28); soundChiquitoGrito(0.4, 0.24); return; }
     [523.25,659.25,783.99,1046.5].forEach((f,i)=> playTone(f, 0.24, "sine", i*0.1, 0.16));
   }
   function vibrate(pattern){
@@ -1130,19 +1174,27 @@
     if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
   }
 
+  const CHIQUITO_MILESTONE_MSGS = {
+    25: "🕶️ ¡Fistro! Vas al 25%, pecador de la pradera",
+    50: "🕶️ ¡Hasta luego, Lucas! Ya vas por el 50%",
+    75: "🕶️ ¡Cómo puedeh sé! 75% ya está aquí",
+    100: "🎉 ¡Fistro, campeón! Objetivo del día completado, ¡hasta luego Lucas!"
+  };
+
   function checkMilestones(day, prevMl, goal){
     const marks = [25,50,75,100];
     marks.forEach(m=>{
       const thresh = goal * (m/100);
       if(prevMl < thresh && day.ml >= thresh && !day.milestones.includes(m)){
         day.milestones.push(m);
+        const msg = settings.chiquito ? CHIQUITO_MILESTONE_MSGS[m] : null;
         if(m===100){
-          toast("🎉 ¡Objetivo del día completado!");
+          toast(msg || "🎉 ¡Objetivo del día completado!");
           soundComplete();
           vibrate([40,30,40,30,90]);
           if(!day.celebrated){ fireConfetti(); day.celebrated = true; }
         } else {
-          toast("💧 Vas por el " + m + "%");
+          toast(msg || ("💧 Vas por el " + m + "%"));
           soundMilestone();
           vibrate([12,25,12]);
         }
@@ -1443,6 +1495,43 @@
     document.body.classList.toggle("large-buttons", settings.buttonSize === "large");
   }
 
+  /* ---------------- Modo Chiquito (easter egg secreto) ---------------- */
+  function applyChiquitoMode(){
+    document.body.classList.toggle("chiquito", !!settings.chiquito);
+  }
+  function toggleChiquitoMode(){
+    settings.chiquito = !settings.chiquito;
+    saveSettings(settings);
+    applyChiquitoMode();
+    vibrate(settings.chiquito ? [30,40,30,40,90] : 20);
+    toast(settings.chiquito ? "🕶️ ¡Fistro! Modo Chiquito activado" : "Modo Chiquito desactivado");
+    renderAll();
+  }
+  (function setupChiquitoEasterEgg(){
+    const btn = $("openSettings");
+    let holdTimer = null;
+    let holdTriggered = false;
+    const HOLD_MS = 900;
+    btn.addEventListener("pointerdown", ()=>{
+      holdTriggered = false;
+      clearTimeout(holdTimer);
+      holdTimer = setTimeout(()=>{
+        holdTriggered = true;
+        toggleChiquitoMode();
+      }, HOLD_MS);
+    });
+    ["pointerup","pointerleave","pointercancel"].forEach(evt=>{
+      btn.addEventListener(evt, ()=> clearTimeout(holdTimer));
+    });
+    btn.addEventListener("click", (e)=>{
+      if(holdTriggered){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        holdTriggered = false;
+      }
+    }, true);
+  })();
+
   function updateSizeOptions(container){
     container.querySelectorAll(".size-opt").forEach(opt=>{
       opt.classList.toggle("sel", opt.dataset.size === settings.buttonSize);
@@ -1571,7 +1660,9 @@
 
   function sendReminder(){
     if(!("Notification" in window)){ toast(isIOS ? "Instala la app primero para poder notificar" : "Notificaciones no disponibles"); return; }
-    const body = "No olvides beber agua 💧 Llevas " + (getDay(todayKey()).ml) + " ml hoy.";
+    const body = settings.chiquito
+      ? "Bebe agua por la gloria de tu madre 💧 Llevas " + (getDay(todayKey()).ml) + " ml hoy."
+      : "No olvides beber agua 💧 Llevas " + (getDay(todayKey()).ml) + " ml hoy.";
     if(navigator.serviceWorker && navigator.serviceWorker.ready){
       navigator.serviceWorker.ready.then(reg=>{
         if(reg.showNotification){
@@ -1791,6 +1882,7 @@
   }
 
   applyButtonSize();
+  applyChiquitoMode();
   renderAll();
   initOnboarding();
 
