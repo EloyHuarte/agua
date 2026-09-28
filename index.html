@@ -153,7 +153,16 @@
   .ring-center .ml{ font-size:44px; font-weight:800; letter-spacing:-0.03em; line-height:1; }
   .ring-center .ml span{ font-size:17px; font-weight:600; color:var(--text-dim); margin-left:2px; }
   .ring-center .goal{ font-size:12.5px; color:var(--text-dim2); margin-top:4px; }
-  .ring-center .pct{ font-size:12px; color:var(--accent2); font-weight:700; margin-top:6px; background:rgba(56,189,248,0.12); padding:3px 10px; border-radius:100px; }
+  .ring-center .pct{
+    font-size:12px; color:var(--accent2); font-weight:700; margin-top:6px;
+    background:rgba(6,12,24,0.6); border:1px solid rgba(255,255,255,0.1);
+    padding:3px 10px; border-radius:100px; backdrop-filter:blur(6px);
+    text-shadow:0 1px 3px rgba(0,0,0,0.5);
+  }
+  .ring-center .pct.complete{
+    background:rgba(4,20,15,0.78); color:#4ade80; border-color:rgba(74,222,128,0.55);
+    box-shadow:0 0 14px rgba(74,222,128,0.4);
+  }
 
   /* ---------- Quick add ---------- */
   .section-title{ font-size:13px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin:22px 0 10px 4px; display:flex; align-items:center; justify-content:space-between; }
@@ -187,6 +196,16 @@
   .btn.danger{ background:linear-gradient(135deg,#fb7185,#e11d48); color:#2a0007; }
   .btn.full{ width:100%; }
   .btn.sm{ padding:9px 14px; font-size:13px; }
+
+  .today-log-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .today-log-chip{
+    display:flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,0.05); border:1px solid var(--card-brd);
+    border-radius:100px; padding:6px 12px 6px 8px;
+    animation: fadeIn .3s ease;
+  }
+  .today-log-chip .e{ font-size:16px; line-height:1; }
+  .today-log-chip .v{ font-size:12px; font-weight:700; color:var(--text-dim); }
 
   .undo-row{ display:flex; justify-content:center; margin-top:14px; }
   .undo{
@@ -325,17 +344,15 @@
   .install-banner .ic{ font-size:20px; flex:0 0 auto; }
 
   .update-banner{
-    position:fixed; left:50%; top:calc(14px + var(--safe-top)); z-index:70;
-    transform:translateX(-50%) translateY(-160%);
-    display:flex; align-items:center; gap:12px;
-    background:rgba(15,23,42,0.95); border:1px solid rgba(56,189,248,0.4);
-    padding:12px 14px; border-radius:18px; box-shadow:0 12px 30px rgba(0,0,0,0.45);
-    backdrop-filter:blur(14px); width:calc(100% - 36px); max-width:420px;
-    transition:transform .35s cubic-bezier(.22,1,.36,1);
+    display:none; align-items:center; gap:12px; padding:13px 14px; border-radius:18px;
+    background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(129,140,248,0.1));
+    border:1px solid rgba(56,189,248,0.4); margin-bottom:16px;
+    animation: fadeIn .35s ease;
   }
-  .update-banner.show{ transform:translateX(-50%) translateY(0); }
+  .update-banner.show{ display:flex; }
   .update-banner .txt{ flex:1; font-size:12.5px; color:var(--text-dim); line-height:1.4; }
   .update-banner .txt b{ color:var(--text); display:block; font-size:13.5px; margin-bottom:2px; }
+  .update-banner .ic{ font-size:20px; flex:0 0 auto; }
   .share-glyph{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:5px; background:rgba(56,189,248,0.22); vertical-align:-4px; margin:0 2px; }
 
   .empty{ text-align:center; padding:30px 10px; color:var(--text-dim2); font-size:13px; }
@@ -380,6 +397,9 @@
   body.large-buttons .custom-input{ font-size:19px; padding:16px 16px; border-radius:18px; }
   body.large-buttons .custom-row .btn{ font-size:17px; padding:16px 22px; border-radius:18px; width:100%; }
   body.large-buttons .undo{ font-size:15px; padding:12px 20px; }
+  body.large-buttons .today-log-chip{ padding:9px 16px 9px 11px; }
+  body.large-buttons .today-log-chip .e{ font-size:21px; }
+  body.large-buttons .today-log-chip .v{ font-size:14px; }
   body.large-buttons .ring-icon-pop{ font-size:32px; }
   body.large-buttons .app{ padding-bottom: calc(150px + var(--safe-bottom)); }
   body.large-buttons .ring-center .ml{ font-size:52px; }
@@ -432,11 +452,6 @@
 <canvas id="confetti"></canvas>
 <div id="toasts"></div>
 
-<div class="update-banner" id="updateBanner">
-  <div class="txt"><b>🔄 Nueva versión disponible</b>Toca para actualizar la app</div>
-  <button class="btn sm" id="updateBtn">Actualizar</button>
-</div>
-
 <div class="app">
 
   <header>
@@ -449,6 +464,12 @@
       <div class="icon-btn" id="openSettings">⚙️</div>
     </div>
   </header>
+
+  <div class="update-banner" id="updateBanner">
+    <div class="ic">🔄</div>
+    <div class="txt"><b>Nueva versión disponible</b>Toca para actualizar la app</div>
+    <button class="btn sm" id="updateBtn">Actualizar</button>
+  </div>
 
   <div class="install-banner" id="installBanner">
     <div class="txt"><b>Instala Agua en tu móvil</b>Se abrirá a pantalla completa como una app, sin barra del navegador.</div>
@@ -498,6 +519,11 @@
         <button class="btn" id="addCustomBtn">Añadir</button>
       </div>
       <div class="undo-row"><button class="undo" id="undoBtn" style="visibility:hidden;">↩️ Deshacer último registro</button></div>
+
+      <div class="section-title">Historial de hoy</div>
+      <div class="card">
+        <div class="today-log-row" id="todayLogRow"></div>
+      </div>
 
       <div class="section-title">Nivel</div>
       <div class="card level-card">
@@ -692,6 +718,7 @@
 
     <div class="divider"></div>
 
+    <button class="btn ghost full" id="checkUpdateBtn" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px;">🔄 Buscar actualizaciones</button>
     <button class="btn ghost full" id="suggestBtn" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px;">💡 Enviar una sugerencia</button>
 
     <button class="btn danger full" id="resetBtn">Borrar todos los datos</button>
@@ -834,13 +861,23 @@
 
     undoBtn.style.visibility = day.logs.length ? "visible" : "hidden";
 
-    if(pctOver >= 1){
-      pctVal.style.background = "rgba(52,211,153,0.16)";
-      pctVal.style.color = "#34d399";
-    } else {
-      pctVal.style.background = "";
-      pctVal.style.color = "";
+    pctVal.classList.toggle("complete", pctOver >= 1);
+
+    renderTodayLog(day);
+  }
+
+  /* ---------------- Historial de hoy (iconos de lo añadido) ---------------- */
+  function renderTodayLog(day){
+    const row = $("todayLogRow");
+    if(!day.logs.length){
+      row.innerHTML = `<div class="empty" style="padding:14px 4px;">Aún no has añadido agua hoy</div>`;
+      return;
     }
+    row.innerHTML = day.logs.map(log=>{
+      const t = new Date(log.t);
+      const time = t.toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
+      return `<div class="today-log-chip" title="${time}"><span class="e">${log.icon || "💧"}</span><span class="v">${log.ml} ml</span></div>`;
+    }).join("");
   }
 
   /* ---------------- Streak (con comodín mensual) ---------------- */
@@ -1621,23 +1658,70 @@
   window.addEventListener("appinstalled", ()=> $("installBanner").classList.remove("show"));
 
   /* ---------------- Service worker + aviso de actualización ---------------- */
-  if("serviceWorker" in navigator){
-    let newWorker = null;
-    let refreshing = false;
+  const swSupported = "serviceWorker" in navigator;
+  let swReg = null;
+  let newWorker = null;
+  let refreshing = false;
 
-    function showUpdateBanner(){ $("updateBanner").classList.add("show"); }
+  function showUpdateBanner(){ $("updateBanner").classList.add("show"); }
+  function hideUpdateBanner(){ $("updateBanner").classList.remove("show"); }
 
-    function trackInstalling(worker){
-      worker.addEventListener("statechange", ()=>{
-        if(worker.state === "installed" && navigator.serviceWorker.controller){
-          newWorker = worker;
-          showUpdateBanner();
-        }
-      });
+  function applyUpdate(){
+    if(!newWorker) return;
+    newWorker.postMessage({ type:"SKIP_WAITING" });
+    hideUpdateBanner();
+  }
+
+  function trackInstalling(worker, onFound){
+    worker.addEventListener("statechange", ()=>{
+      if(worker.state === "installed" && navigator.serviceWorker.controller){
+        newWorker = worker;
+        showUpdateBanner();
+        if(onFound) onFound();
+      }
+    });
+  }
+
+  // Comprueba si hay una versión nueva. manual=true -> la aplica al momento si existe,
+  // o avisa de que ya está a la última si no hay ninguna (usado por el botón de Ajustes).
+  async function checkForUpdate(manual){
+    if(!swSupported){
+      if(manual) toast("Actualizaciones no disponibles en este navegador");
+      return;
     }
+    try{
+      const reg = swReg || await navigator.serviceWorker.getRegistration();
+      if(!reg){
+        if(manual) toast("✅ Estás en la última versión");
+        return;
+      }
+      if(reg.waiting && navigator.serviceWorker.controller){
+        newWorker = reg.waiting;
+        showUpdateBanner();
+        if(manual) applyUpdate();
+        return;
+      }
+      await reg.update();
+      await new Promise(r=> setTimeout(r, 800));
+      if(reg.waiting && navigator.serviceWorker.controller){
+        newWorker = reg.waiting;
+        showUpdateBanner();
+        if(manual) applyUpdate();
+      } else if(reg.installing){
+        if(manual) toast("Comprobando… vuelve a intentarlo en unos segundos");
+        trackInstalling(reg.installing);
+      } else if(manual){
+        toast("✅ Estás en la última versión");
+      }
+    }catch(e){
+      if(manual) toast("No se pudo comprobar si hay actualizaciones");
+    }
+  }
 
+  if(swSupported){
     window.addEventListener("load", ()=>{
       navigator.serviceWorker.register("sw.js").then(reg=>{
+        swReg = reg;
         if(reg.waiting && navigator.serviceWorker.controller){
           newWorker = reg.waiting;
           showUpdateBanner();
@@ -1654,12 +1738,10 @@
       refreshing = true;
       window.location.reload();
     });
-
-    $("updateBtn").addEventListener("click", ()=>{
-      if(newWorker) newWorker.postMessage({ type:"SKIP_WAITING" });
-      $("updateBanner").classList.remove("show");
-    });
   }
+
+  $("updateBtn").addEventListener("click", applyUpdate);
+  $("checkUpdateBtn").addEventListener("click", ()=> checkForUpdate(true));
 
   /* ---------------- Onboarding (primera vez) ---------------- */
   let onbSelectedSize = "normal";
