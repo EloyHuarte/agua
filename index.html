@@ -223,6 +223,22 @@
   .today-log-chip .e{ font-size:16px; line-height:1; }
   .today-log-chip .v{ font-size:12px; font-weight:700; color:var(--text-dim); }
 
+  .ranking-row{
+    display:flex; align-items:center; gap:10px; padding:9px 4px;
+    border-bottom:1px solid var(--card-brd);
+  }
+  .ranking-row:last-child{ border-bottom:none; }
+  .ranking-row .pos{ width:22px; text-align:center; font-weight:800; color:var(--text-dim); font-size:13px; }
+  .ranking-row.me{ background:rgba(56,189,248,0.08); border-radius:10px; }
+  .ranking-row .name{ flex:1; font-weight:700; font-size:14px; }
+  .ranking-row .ml{ font-size:13px; font-weight:700; color:var(--text-dim); }
+  .ranking-row .medal{ font-size:16px; }
+  .ranking-empty{ text-align:center; color:var(--text-dim2); font-size:13px; padding:10px 4px; }
+  .ranking-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+  .ranking-refresh{
+    background:none; border:none; color:var(--text-dim); font-size:16px; cursor:pointer; padding:4px 6px;
+  }
+
   .undo-row{ display:flex; justify-content:center; margin-top:14px; }
   .undo{
     display:flex; align-items:center; gap:6px;
@@ -590,6 +606,15 @@
       </div>
       <div class="section-title">Resumen</div>
       <div class="card" id="summaryCard" style="display:flex; gap:10px; justify-content:space-between; text-align:center;"></div>
+
+      <div class="section-title" id="rankingTitle" style="display:none;">🏆 Ranking de hoy</div>
+      <div class="card" id="rankingCard" style="display:none;">
+        <div class="ranking-head">
+          <span style="font-size:12.5px; color:var(--text-dim);">Quién ha bebido más hoy</span>
+          <button class="ranking-refresh" id="rankingRefreshBtn" title="Actualizar">🔄</button>
+        </div>
+        <div id="rankingList"></div>
+      </div>
     </section>
 
   </div>
@@ -738,6 +763,23 @@
 
     <div class="divider"></div>
 
+    <div class="field">
+      <div class="switch-row">
+        <div>
+          <div class="lab">🏆 Ranking con otros</div>
+          <div class="sub">Comparte cuánta agua llevas hoy y ve el ranking del grupo (necesita la URL de tu hoja de Google)</div>
+        </div>
+        <div class="switch" id="rankingSwitch"></div>
+      </div>
+      <div id="rankingOptions" style="margin-top:14px; display:none;">
+        <label style="display:block; font-size:12.5px; color:var(--text-dim); margin-bottom:7px; font-weight:600;">URL de la app web de Google (Apps Script)</label>
+        <input type="text" id="rankingUrl" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--card-brd); border-radius:14px; padding:11px 13px; color:var(--text); font-size:13.5px; font-weight:600;">
+        <div class="hint">Se usa el nombre de arriba ("Tu nombre") para identificarte en el ranking.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
     <button class="btn ghost full" id="checkUpdateBtn" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px;">🔄 Buscar actualizaciones</button>
     <button class="btn ghost full" id="suggestBtn" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px;">💡 Enviar una sugerencia</button>
 
@@ -787,7 +829,8 @@
       {e:"🍶", l:"Grande", ml:330},
       {e:"🍾", l:"Botella", ml:500}
     ],
-    reminder: { enabled:false, interval:120, start:8, end:22, lastAt:0 }
+    reminder: { enabled:false, interval:120, start:8, end:22, lastAt:0 },
+    ranking: { enabled:false, url:"https://script.google.com/macros/s/AKfycbxp0kByuEs3-vvTtDgin01DapZJnZxxdlg2aqTN7CrcUvS7UwSBE5A0EWkFDqMHFnVsoA/exec" }
   };
 
   function loadSettings(){
@@ -796,7 +839,8 @@
       if(!raw) return structuredClone(DEFAULT_SETTINGS);
       const s = JSON.parse(raw);
       return Object.assign(structuredClone(DEFAULT_SETTINGS), s, {
-        reminder: Object.assign(structuredClone(DEFAULT_SETTINGS.reminder), s.reminder||{})
+        reminder: Object.assign(structuredClone(DEFAULT_SETTINGS.reminder), s.reminder||{}),
+        ranking: Object.assign(structuredClone(DEFAULT_SETTINGS.ranking), s.ranking||{})
       });
     }catch(e){ return structuredClone(DEFAULT_SETTINGS); }
   }
@@ -1217,22 +1261,34 @@
 
   function checkMilestones(day, prevMl, goal){
     const marks = [25,50,75,100];
+    const newlyHit = [];
     marks.forEach(m=>{
       const thresh = goal * (m/100);
       if(prevMl < thresh && day.ml >= thresh && !day.milestones.includes(m)){
         day.milestones.push(m);
+        newlyHit.push(m);
+      }
+    });
+    // Si el 100% se cruza en este mismo registro, decidimos aquí (de forma síncrona,
+    // antes de guardar) si toca confeti, para que quede guardado bien a la primera.
+    const willCelebrate = newlyHit.includes(100) && !day.celebrated;
+    if(willCelebrate) day.celebrated = true;
+    // Si se cruzan varios hitos de golpe (p.ej. 25% y 75% en el mismo registro),
+    // se anuncian uno detrás de otro en vez de a la vez, para que se distingan bien.
+    newlyHit.forEach((m, i)=>{
+      setTimeout(()=>{
         const msg = settings.chiquito ? CHIQUITO_MILESTONE_MSGS[m] : null;
         if(m===100){
           toast(msg || "🎉 ¡Objetivo del día completado!");
           soundComplete();
           vibrate([40,30,40,30,90]);
-          if(!day.celebrated){ fireConfetti(); day.celebrated = true; }
+          if(willCelebrate) fireConfetti();
         } else {
           toast(msg || ("💧 Vas por el " + m + "%"));
           soundMilestone(m);
           vibrate([12,25,12]);
         }
-      }
+      }, i*1000);
     });
   }
 
@@ -1260,6 +1316,7 @@
     saveDays(days);
     renderAll();
     popRingIcon(useIcon);
+    syncTodayToRanking();
   }
 
   $("addCustomBtn").addEventListener("click", ()=>{
@@ -1517,7 +1574,7 @@
       btn.classList.add("active");
       document.querySelectorAll(".views > section").forEach(s=>s.classList.remove("active"));
       $("view-"+btn.dataset.view).classList.add("active");
-      if(btn.dataset.view === "history"){ drawChart(); renderSummary(); }
+      if(btn.dataset.view === "history"){ drawChart(); renderSummary(); fetchRanking(); }
     });
   });
 
@@ -1601,6 +1658,9 @@
     $("remStart").value = settings.reminder.start;
     $("remEnd").value = settings.reminder.end;
     setupReminderUI();
+    $("rankingSwitch").classList.toggle("on", settings.ranking.enabled);
+    $("rankingOptions").style.display = settings.ranking.enabled ? "block" : "none";
+    $("rankingUrl").value = settings.ranking.url || "";
     openModal("settingsModal");
   });
   $("settingsSave").addEventListener("click", ()=>{
@@ -1697,11 +1757,36 @@
   $("remStart").addEventListener("input", (e)=>{ settings.reminder.start = Math.max(0, Math.min(23, parseInt(e.target.value,10)||0)); saveSettings(settings); });
   $("remEnd").addEventListener("input", (e)=>{ settings.reminder.end = Math.max(0, Math.min(23, parseInt(e.target.value,10)||23)); saveSettings(settings); });
 
+  const REMINDER_ENCOURAGEMENTS = [
+    "¡Vas muy bien, sigue así!",
+    "Un poco más y lo tienes.",
+    "Tu cuerpo te lo agradece.",
+    "¡Dale otro trago!",
+    "Ya casi está, no te rindas.",
+    "Cada sorbo cuenta."
+  ];
+  const CHIQUITO_REMINDER_PHRASES = [
+    "¡Fistro, pecador de la pradera! Que no se te olvide beber.",
+    "¡Cuidadín, cuidadín! Que te deshidratas.",
+    "¡Ozú! Que te falta agua todavía.",
+    "Como diría un servidor: ¡bebe agua, fistro!",
+    "¡Hasta luego, Lucas! Pero antes, un trago de agua.",
+    "¿Pero tú has bebido agua o no? ¡Cómo puedeh sé!"
+  ];
+  function reminderPhrase(){
+    const pool = settings.chiquito ? CHIQUITO_REMINDER_PHRASES : REMINDER_ENCOURAGEMENTS;
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
   function sendReminder(){
     if(!("Notification" in window)){ toast(isIOS ? "Instala la app primero para poder notificar" : "Notificaciones no disponibles"); return; }
-    const body = settings.chiquito
-      ? "Bebe agua por la gloria de tu madre 💧 Llevas " + (getDay(todayKey()).ml) + " ml hoy."
-      : "No olvides beber agua 💧 Llevas " + (getDay(todayKey()).ml) + " ml hoy.";
+    const day = getDay(todayKey());
+    const goal = settings.goal || 2000;
+    const pct = Math.min(100, Math.round((day.ml / goal) * 100));
+    const remaining = Math.max(0, goal - day.ml);
+    const phrase = reminderPhrase();
+    const body = remaining > 0
+      ? "💧 Vas al " + pct + "% (te quedan " + remaining + " ml). " + phrase
+      : "🎉 ¡Ya has llegado a tu objetivo de hoy! " + phrase;
     if(navigator.serviceWorker && navigator.serviceWorker.ready){
       navigator.serviceWorker.ready.then(reg=>{
         if(reg.showNotification){
@@ -1720,6 +1805,9 @@
     const r = settings.reminder;
     if(!r.enabled) return;
     if(!("Notification" in window) || Notification.permission !== "granted") return;
+    // Objetivo del día ya alcanzado: no seguir molestando con avisos hasta mañana.
+    const day = getDay(todayKey());
+    if(day.ml >= (settings.goal || 2000)) return;
     const now = new Date();
     const hour = now.getHours();
     const inWindow = r.start <= r.end ? (hour >= r.start && hour < r.end) : (hour >= r.start || hour < r.end);
@@ -1732,6 +1820,86 @@
     }
   }
   setInterval(reminderTick, 60000);
+
+  /* ---------------- Ranking con otros (Google Sheets vía Apps Script) ---------------- */
+  // Este "secreto" solo evita que alguien random encuentre la URL y ensucie la hoja sin querer,
+  // no es seguridad real. Tiene que ser IDÉNTICO al APP_SECRET del Code.gs desplegado en Google.
+  const RANKING_SECRET = "agua-rosana-2026";
+  let rankingSyncTimer = null;
+
+  function renderRankingVisibility(){
+    const on = !!(settings.ranking.enabled && settings.ranking.url);
+    $("rankingTitle").style.display = on ? "block" : "none";
+    $("rankingCard").style.display = on ? "block" : "none";
+  }
+
+  function renderRankingList(rows, err){
+    const el = $("rankingList");
+    el.innerHTML = "";
+    if(err){
+      el.innerHTML = '<div class="ranking-empty">No se ha podido cargar el ranking (revisa conexión o la URL en Ajustes).</div>';
+      return;
+    }
+    if(!rows || !rows.length){
+      el.innerHTML = '<div class="ranking-empty">Nadie ha registrado agua hoy todavía.</div>';
+      return;
+    }
+    const medals = ["🥇","🥈","🥉"];
+    rows.forEach((r, i)=>{
+      const row = document.createElement("div");
+      row.className = "ranking-row" + (r.name === settings.name ? " me" : "");
+      row.innerHTML =
+        '<div class="pos">' + (medals[i] || (i+1)) + '</div>' +
+        '<div class="name">' + escapeHtml(r.name) + (r.name === settings.name ? " (tú)" : "") + '</div>' +
+        '<div class="ml">' + (r.ml||0) + ' ml</div>';
+      el.appendChild(row);
+    });
+  }
+  function escapeHtml(s){
+    const d = document.createElement("div");
+    d.textContent = String(s||"");
+    return d.innerHTML;
+  }
+
+  function fetchRanking(){
+    renderRankingVisibility();
+    if(!(settings.ranking.enabled && settings.ranking.url)) return;
+    const url = settings.ranking.url.trim() + (settings.ranking.url.includes("?") ? "&" : "?") + "date=" + encodeURIComponent(todayKey());
+    fetch(url).then(r=>r.json()).then(data=>{
+      if(data && data.ok) renderRankingList(data.ranking, false);
+      else renderRankingList(null, true);
+    }).catch(()=> renderRankingList(null, true));
+  }
+  $("rankingRefreshBtn").addEventListener("click", fetchRanking);
+
+  function syncTodayToRanking(){
+    if(!(settings.ranking.enabled && settings.ranking.url && settings.name)) return;
+    clearTimeout(rankingSyncTimer);
+    // pequeño margen para no disparar una petición por cada ml si se pulsa varias veces seguidas
+    rankingSyncTimer = setTimeout(()=>{
+      const ml = getDay(todayKey()).ml;
+      const payload = { secret: RANKING_SECRET, name: settings.name, date: todayKey(), ml };
+      fetch(settings.ranking.url.trim(), {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita el preflight CORS que Apps Script no soporta
+        body: JSON.stringify(payload)
+      }).then(()=> fetchRanking()).catch(()=>{});
+    }, 600);
+  }
+
+  $("rankingSwitch").addEventListener("click", ()=>{
+    settings.ranking.enabled = !settings.ranking.enabled;
+    saveSettings(settings);
+    $("rankingSwitch").classList.toggle("on", settings.ranking.enabled);
+    $("rankingOptions").style.display = settings.ranking.enabled ? "block" : "none";
+    renderRankingVisibility();
+    if(settings.ranking.enabled && settings.ranking.url) fetchRanking();
+  });
+  $("rankingUrl").addEventListener("input", (e)=>{
+    settings.ranking.url = e.target.value.trim();
+    saveSettings(settings);
+  });
+  $("rankingUrl").addEventListener("change", ()=>{ renderRankingVisibility(); if(settings.ranking.enabled) fetchRanking(); });
 
   /* ---------------- Sugerencias por correo ---------------- */
   const SUGGEST_EMAIL = ["eloyhuarte", "gmail.com"].join("@");
@@ -1923,6 +2091,7 @@
   applyButtonSize();
   applyChiquitoMode();
   renderAll();
+  renderRankingVisibility();
   initOnboarding();
 
   // midnight refresh so date/ring roll over without needing a manual reload
