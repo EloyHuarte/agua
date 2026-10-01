@@ -1,4 +1,4 @@
-const CACHE_NAME = "agua-cache-v2.6";
+const CACHE_NAME = "agua-cache-v3.0";
 const ASSETS = [
   "./",
   "./index.html",
@@ -41,6 +41,9 @@ self.addEventListener("message", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // v2.8: solo se gestiona lo propio de la app (mismo origen y GET). Las peticiones a Google
+  // (ranking) NUNCA pasan por la caché; antes se guardaba la 1.ª respuesta y se servía siempre esa.
+  if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;

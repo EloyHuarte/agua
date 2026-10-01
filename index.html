@@ -476,6 +476,51 @@
   .onboard-dots span.on{ background:var(--accent2); width:16px; border-radius:4px; }
   .onboard-step{ display:none; }
   .onboard-step.active{ display:block; animation:fadeIn .3s ease; }
+
+  /* ---------------- v2.8: contraste con el círculo completo ---------------- */
+  .ring-wrap.full .ring-center .ml{
+    color:#fff; background:rgba(4,14,30,0.62); padding:6px 16px 8px; border-radius:20px;
+    border:1px solid rgba(255,255,255,0.18); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    text-shadow:0 2px 8px rgba(0,0,0,0.75);
+  }
+  .ring-wrap.full .ring-center .ml span{ color:#e0f2fe; }
+  .ring-wrap.full .ring-center .goal{
+    color:#fff; font-weight:600; text-shadow:0 1px 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9);
+  }
+
+  /* ---------------- v2.8: comodines y ligas ---------------- */
+  .fz-slots{ display:flex; justify-content:center; gap:10px; margin:4px 0 12px; }
+  .fz-slot{
+    width:52px; height:52px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+    font-size:26px; background:rgba(56,189,248,0.14); border:1.5px solid rgba(125,211,252,0.5);
+    box-shadow:0 0 14px rgba(56,189,248,0.2);
+  }
+  .fz-slot.empty{ background:rgba(255,255,255,0.03); border:1.5px dashed rgba(255,255,255,0.18); box-shadow:none; filter:grayscale(1); opacity:.45; }
+  .fz-slot.locked{ background:rgba(255,255,255,0.03); border:1.5px dashed rgba(251,191,36,0.4); box-shadow:none; opacity:.8; font-size:20px; }
+  .fz-count{ text-align:center; font-weight:800; font-size:15px; }
+  .fz-sub{ text-align:center; font-size:12px; color:var(--text-dim); margin-top:3px; }
+  .fz-bar{ height:8px; border-radius:100px; background:rgba(255,255,255,0.07); overflow:hidden; margin-top:12px; }
+  .fz-bar > div{ height:100%; width:0%; border-radius:100px; background:linear-gradient(90deg, #38bdf8, #fbbf24); transition:width .8s cubic-bezier(.22,1,.36,1); }
+  .fz-note{ font-size:11.5px; color:var(--text-dim2); margin-top:8px; line-height:1.45; }
+  .fz-used{ font-size:11.5px; color:var(--text-dim); margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.07); }
+  .lg-top{ display:flex; align-items:center; gap:14px; }
+  .lg-emoji{ width:54px; height:54px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:30px; background:rgba(255,255,255,0.06); }
+  .lg-name{ font-size:17px; font-weight:800; }
+  .lg-sub{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+  .lg-list{ display:flex; flex-direction:column; gap:6px; margin-top:14px; }
+  .lg-row{ display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:12px; font-size:13px; color:var(--text-dim); }
+  .lg-row .n{ flex:1; font-weight:700; }
+  .lg-row.cur{ background:rgba(56,189,248,0.12); color:var(--text); border:1px solid rgba(125,211,252,0.35); }
+  .lg-row.done{ opacity:.7; }
+  .ranking-upd{ font-size:11px; color:var(--text-dim2); text-align:center; margin-top:6px; }
+
+  .rk-tabs{ display:flex; gap:6px; margin:8px 0 6px; }
+  .rk-tab{
+    flex:1; padding:8px 4px; border-radius:100px; font-size:12.5px; font-weight:700; cursor:pointer;
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:var(--text-dim);
+  }
+  .rk-tab.on{ background:rgba(56,189,248,0.16); border-color:rgba(125,211,252,0.5); color:var(--text); }
+  .ranking-row .ml small{ font-weight:600; color:var(--text-dim2); margin-left:4px; }
 </style>
 </head>
 <body>
@@ -493,7 +538,7 @@
       <div class="chiquito-tag" id="chiquitoTag">🕶️ Modo Chiquito</div>
     </div>
     <div class="header-actions">
-      <div class="streak-pill" id="streakPill">🔥 <span id="streakVal">0</span></div>
+      <div class="streak-pill" id="streakPill">🔥 <span id="streakVal">0</span><span id="streakFreezeMini" style="margin-left:4px; color:#7dd3fc;"></span></div>
       <div class="icon-btn" id="openSettings">⚙️</div>
     </div>
   </header>
@@ -586,8 +631,33 @@
             <div class="l">Récord histórico</div>
           </div>
         </div>
-        <div class="freeze-info" id="freezeInfo">❄️ Comodín de racha disponible este mes</div>
         <div class="badges-row" id="badgesRow"></div>
+      </div>
+
+      <div class="section-title">❄️ Comodines de racha</div>
+      <div class="card" id="freezeCard">
+        <div class="fz-slots" id="fzSlots"></div>
+        <div class="fz-count" id="fzCount"></div>
+        <div class="fz-sub" id="fzSub"></div>
+        <div class="fz-bar"><div id="fzBar"></div></div>
+        <div class="fz-note" id="fzBonusNote"></div>
+        <div class="fz-used" id="fzUsed" style="display:none;"></div>
+        <div class="fz-note">Un comodín se gasta solo cuando un día no llegas a tu objetivo: salva la racha, pero ese día no suma. Empiezas con 1, ganas 1 por cada 30 días cumplidos (máx. 3) y, si encadenas 3 meses al 100% sin gastar ninguno, desbloqueas un 4.º hueco y recibes un comodín extra. Si te quedas sin comodines y fallas, la racha se rompe y vuelves a empezar con 1.</div>
+      </div>
+
+      <div class="section-title">Liga de bebedores</div>
+      <div class="card" id="leagueCard">
+        <div class="lg-top">
+          <div class="lg-emoji" id="lgEmoji">🥉</div>
+          <div>
+            <div class="lg-name" id="lgName">Liga Bronce</div>
+            <div class="lg-sub" id="lgSub"></div>
+          </div>
+        </div>
+        <div class="level-bar" style="margin-top:12px;"><div class="level-bar-fill" id="lgBar"></div></div>
+        <div class="level-next" id="lgNext" style="margin-top:6px;"></div>
+        <div class="lg-list" id="lgList"></div>
+        <div class="fz-note">La liga se calcula con los días que has cumplido tu objetivo en los últimos 30 (hoy incluido). Se recalcula cada día: si dejas de cumplir, vas bajando.</div>
       </div>
 
       <button class="btn ghost full share-btn" id="shareBtn">📤 Compartir tarjeta</button>
@@ -607,13 +677,19 @@
       <div class="section-title">Resumen</div>
       <div class="card" id="summaryCard" style="display:flex; gap:10px; justify-content:space-between; text-align:center;"></div>
 
-      <div class="section-title" id="rankingTitle" style="display:none;">🏆 Ranking de hoy</div>
+      <div class="section-title" id="rankingTitle" style="display:none;">🏆 Ranking</div>
       <div class="card" id="rankingCard" style="display:none;">
         <div class="ranking-head">
-          <span style="font-size:12.5px; color:var(--text-dim);">Quién ha bebido más hoy</span>
+          <span id="rankingCaption" style="font-size:12.5px; color:var(--text-dim);">Quién ha bebido más hoy</span>
           <button class="ranking-refresh" id="rankingRefreshBtn" title="Actualizar">🔄</button>
         </div>
+        <div class="rk-tabs" id="rkTabs">
+          <button class="rk-tab on" data-p="day">Hoy</button>
+          <button class="rk-tab" data-p="week">Semana</button>
+          <button class="rk-tab" data-p="month">Mes</button>
+        </div>
         <div id="rankingList"></div>
+        <div class="ranking-upd" id="rankingUpd"></div>
       </div>
     </section>
 
@@ -767,14 +843,9 @@
       <div class="switch-row">
         <div>
           <div class="lab">🏆 Ranking con otros</div>
-          <div class="sub">Comparte cuánta agua llevas hoy y ve el ranking del grupo (necesita la URL de tu hoja de Google)</div>
+          <div class="sub">Comparte cuánta agua llevas hoy y ve el ranking del grupo. Se usa el nombre de arriba ("Tu nombre") para identificarte.</div>
         </div>
         <div class="switch" id="rankingSwitch"></div>
-      </div>
-      <div id="rankingOptions" style="margin-top:14px; display:none;">
-        <label style="display:block; font-size:12.5px; color:var(--text-dim); margin-bottom:7px; font-weight:600;">URL de la app web de Google (Apps Script)</label>
-        <input type="text" id="rankingUrl" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid var(--card-brd); border-radius:14px; padding:11px 13px; color:var(--text); font-size:13.5px; font-weight:600;">
-        <div class="hint">Se usa el nombre de arriba ("Tu nombre") para identificarte en el ranking.</div>
       </div>
     </div>
 
@@ -930,6 +1001,7 @@
     undoBtn.style.visibility = day.logs.length ? "visible" : "hidden";
 
     pctVal.classList.toggle("complete", pctOver >= 1);
+    document.querySelector(".ring-wrap").classList.toggle("full", pctOver >= 1);
 
     renderTodayLog(day);
   }
@@ -948,44 +1020,43 @@
     }).join("");
   }
 
-  /* ---------------- Streak (con comodín mensual) ---------------- */
-  const FREEZE_KEY = "agua:freezes";
-  function getFreezeLog(){ try{ return JSON.parse(localStorage.getItem(FREEZE_KEY))||{}; }catch(e){ return {}; } }
-  function saveFreezeLog(f){ localStorage.setItem(FREEZE_KEY, JSON.stringify(f)); }
+  /* ---------------- Racha con comodines (v2.8) ----------------
+     Se recalcula SIEMPRE desde el historial de días, así nunca se desincroniza:
+     - empiezas con 1 comodín
+     - +1 comodín por cada 30 días cumplidos (máx. 3)
+     - 90 días seguidos al 100% sin gastar ninguno: desbloquea el 4.º hueco (+1 comodín extra)
+     - un día fallado gasta 1 comodín (la racha sigue, ese día no suma); sin comodines, la racha se rompe */
+  const FZ_START = 1, FZ_MAX = 3, FZ_MAX_BONUS = 4, FZ_EARN_EVERY = 30, FZ_PERFECT_FOR_BONUS = 90;
+  const FZ_SEEN_KEY = "agua:freezeSeen";
 
-  function computeStreak(){
+  function simulateStreak(){
     const goal = settings.goal || 2000;
-    const keys = Object.keys(days);
     const todayK = todayKey();
-    getDay(todayK); // asegura que hoy exista en days
-    if(!keys.length) return 0;
+    getDay(todayK);
+    const res = { streak:0, tokens:FZ_START, cap:FZ_MAX, bonusUnlocked:false, sinceEarn:0, perfectRun:0, used:[] };
     const earliest = Object.keys(days).reduce((a,b)=> a<b?a:b);
-
-    const freezeLog = getFreezeLog();
-    let changed = false;
-    let streak = 0;
-    let cursor = new Date();
-
-    if(days[todayK] && days[todayK].ml >= goal) streak = 1;
-    cursor = addDays(cursor,-1);
-
-    while(true){
+    let cursor = new Date(earliest + "T12:00:00");
+    let guard = 0;
+    while(guard++ < 4000){
       const k = todayKey(cursor);
-      if(k < earliest) break;
-      const d = days[k];
-      const met = d && d.ml >= goal;
-      if(met){ streak++; cursor = addDays(cursor,-1); continue; }
-      const monthKey = k.slice(0,7);
-      if(!freezeLog[monthKey]){
-        freezeLog[monthKey] = true; changed = true;
-        cursor = addDays(cursor,-1);
-        continue;
+      if(k > todayK) break;
+      const met = !!(days[k] && days[k].ml >= goal);
+      if(met){
+        res.streak++; res.sinceEarn++; res.perfectRun++;
+        if(res.sinceEarn >= FZ_EARN_EVERY){ res.sinceEarn = 0; res.tokens = Math.min(res.cap, res.tokens+1); }
+        if(!res.bonusUnlocked && res.perfectRun >= FZ_PERFECT_FOR_BONUS){
+          res.bonusUnlocked = true; res.cap = FZ_MAX_BONUS; res.tokens = Math.min(res.cap, res.tokens+1);
+        }
+      } else if(k < todayK){ // hoy aún puede cumplirse: no se penaliza hasta que pase el día
+        res.perfectRun = 0;
+        if(res.tokens > 0){ res.tokens--; res.used.push(k); }
+        else { res.streak = 0; res.sinceEarn = 0; res.tokens = FZ_START; }
       }
-      break;
+      cursor = addDays(cursor, 1);
     }
-    if(changed) saveFreezeLog(freezeLog);
-    return streak;
+    return res;
   }
+  function computeStreak(){ return simulateStreak().streak; }
 
   const RECORD_KEY = "agua:record";
   function getRecord(){ return parseInt(localStorage.getItem(RECORD_KEY)||"0",10); }
@@ -995,20 +1066,113 @@
     return r;
   }
 
+  function fmtShortDate(k){
+    return new Date(k+"T12:00:00").toLocaleDateString("es-ES",{day:"numeric", month:"short"});
+  }
+
+  function renderFreezes(sim){
+    const slots = $("fzSlots");
+    slots.innerHTML = "";
+    for(let i=0;i<FZ_MAX_BONUS;i++){
+      const el = document.createElement("div");
+      if(i >= sim.cap){ el.className = "fz-slot locked"; el.textContent = "🔒"; el.title = "Se desbloquea con 3 meses al 100%"; }
+      else if(i < sim.tokens){ el.className = "fz-slot"; el.textContent = "❄️"; }
+      else { el.className = "fz-slot empty"; el.textContent = "❄️"; }
+      slots.appendChild(el);
+    }
+    $("fzCount").textContent = sim.tokens + (sim.tokens===1 ? " comodín disponible" : " comodines disponibles") + " (máx. " + sim.cap + ")";
+    if(sim.tokens >= sim.cap){
+      $("fzSub").textContent = "Tienes el máximo guardado. ¡A usarlos solo si hace falta!";
+      $("fzBar").style.width = "100%";
+    } else {
+      const left = FZ_EARN_EVERY - sim.sinceEarn;
+      $("fzSub").textContent = "Siguiente comodín en " + left + (left===1 ? " día" : " días") + " cumpliendo el objetivo";
+      $("fzBar").style.width = Math.round((sim.sinceEarn/FZ_EARN_EVERY)*100) + "%";
+    }
+    if(sim.bonusUnlocked){
+      $("fzBonusNote").textContent = "⭐ Cuarto comodín desbloqueado por encadenar 3 meses al 100%.";
+    } else {
+      const toGo = FZ_PERFECT_FOR_BONUS - sim.perfectRun;
+      $("fzBonusNote").textContent = "🔒 4.º comodín: llevas " + sim.perfectRun + "/" + FZ_PERFECT_FOR_BONUS + " días perfectos seguidos (sin gastar comodines). Te faltan " + toGo + ".";
+    }
+    const u = $("fzUsed");
+    if(sim.used.length){
+      u.style.display = "block";
+      u.textContent = "Comodines usados: " + sim.used.slice(-4).map(fmtShortDate).join(", ");
+    } else { u.style.display = "none"; }
+    $("streakFreezeMini").textContent = "❄️" + sim.tokens;
+  }
+
+  function notifyNewFreezeUse(sim){
+    let seen = null;
+    try{ seen = JSON.parse(localStorage.getItem(FZ_SEEN_KEY)); }catch(e){}
+    if(seen === null){ // primera vez con v2.8: se guarda sin avisar
+      try{ localStorage.setItem(FZ_SEEN_KEY, JSON.stringify(sim.used)); }catch(e){}
+      return;
+    }
+    const fresh = sim.used.filter(k=> seen.indexOf(k) === -1);
+    if(fresh.length){
+      try{ localStorage.setItem(FZ_SEEN_KEY, JSON.stringify(sim.used)); }catch(e){}
+      toast("❄️ Se usó un comodín el " + fmtShortDate(fresh[fresh.length-1]) + ": tu racha sigue viva");
+    }
+  }
+
+  /* ---------------- Liga de bebedores (días cumplidos en los últimos 30) ---------------- */
+  const LEAGUES = [
+    { min:0,  name:"Bronce",   emoji:"🥉" },
+    { min:10, name:"Plata",    emoji:"🥈" },
+    { min:18, name:"Oro",      emoji:"🥇" },
+    { min:24, name:"Platino",  emoji:"💠" },
+    { min:28, name:"Diamante", emoji:"💎" }
+  ];
+  function metDaysLast30(){
+    const goal = settings.goal || 2000;
+    let n = 0;
+    for(let i=0;i<30;i++){
+      const d = days[todayKey(addDays(new Date(), -i))];
+      if(d && d.ml >= goal) n++;
+    }
+    return n;
+  }
+  function renderLeague(){
+    const n = metDaysLast30();
+    let idx = 0;
+    for(let i=0;i<LEAGUES.length;i++){ if(n >= LEAGUES[i].min) idx = i; }
+    const cur = LEAGUES[idx], next = LEAGUES[idx+1];
+    $("lgEmoji").textContent = cur.emoji;
+    $("lgName").textContent = "Liga " + cur.name;
+    $("lgSub").textContent = n + " de 30 días cumplidos";
+    if(next){
+      const span = next.min - cur.min;
+      $("lgBar").style.width = Math.max(0, Math.min(100, ((n-cur.min)/span)*100)) + "%";
+      const need = next.min - n;
+      $("lgNext").textContent = "Te faltan " + need + (need===1 ? " día" : " días") + " cumplidos para la Liga " + next.name + " " + next.emoji;
+    } else {
+      $("lgBar").style.width = "100%";
+      $("lgNext").textContent = "¡Estás en la liga más alta! 💎";
+    }
+    const list = $("lgList");
+    list.innerHTML = "";
+    LEAGUES.forEach((l,i)=>{
+      const hi = LEAGUES[i+1] ? LEAGUES[i+1].min - 1 : 30;
+      const row = document.createElement("div");
+      row.className = "lg-row" + (i===idx ? " cur" : (i<idx ? " done" : ""));
+      row.innerHTML = '<span>' + l.emoji + '</span><span class="n">' + l.name + '</span><span>' + l.min + '–' + hi + ' días</span>';
+      list.appendChild(row);
+    });
+  }
+
   function renderStreak(){
-    const current = computeStreak();
+    const sim = simulateStreak();
+    const current = sim.streak;
     streakVal.textContent = current;
     $("streakValBig").textContent = current;
     const record = updateRecord(current);
     $("recordVal").firstChild.textContent = record;
     $("recordTag").style.display = (record>0 && current>=record) ? "inline" : "none";
-
-    const freezeLog = getFreezeLog();
-    const mk = todayKey().slice(0,7);
-    const used = !!freezeLog[mk];
-    const fi = $("freezeInfo");
-    fi.textContent = used ? "❄️ Comodín de racha ya usado este mes" : "❄️ Comodín de racha disponible este mes (perdona un día sin romper la racha)";
-    fi.classList.toggle("used", used);
+    renderFreezes(sim);
+    renderLeague();
+    notifyNewFreezeUse(sim);
   }
 
   /* ---------------- Nivel (agua acumulada de por vida) ---------------- */
@@ -1535,11 +1699,17 @@
     c.font = "600 30px -apple-system, sans-serif";
     const name = settings.name ? settings.name : "";
     const dateStr = new Date().toLocaleDateString("es-ES",{day:"numeric",month:"long"});
-    c.fillText((name ? name + " · " : "") + dateStr, W/2, H-70);
+    c.fillText((name ? name + " · " : "") + dateStr, W/2, H-100);
+    // enlace de descarga/instalación (la app está publicada en GitHub Pages)
+    c.fillStyle = "#7dd3fc";
+    c.font = "700 32px -apple-system, sans-serif";
+    c.fillText("💧 Descarga la app: " + APP_URL.replace("https://","").replace(/\/$/,""), W/2, H-48);
 
     return new Promise(resolve=> cnv.toBlob(resolve, "image/png", 0.95));
   }
 
+  // Enlace público de la app (GitHub Pages). Va en la imagen y en el texto al compartir.
+  const APP_URL = "https://eloyhuarte.github.io/agua/";
   $("shareBtn").addEventListener("click", async ()=>{
     $("shareBtn").disabled = true;
     const originalText = $("shareBtn").textContent;
@@ -1548,16 +1718,16 @@
       const blob = await buildShareCard();
       const file = new File([blob], "agua-hoy.png", { type:"image/png" });
       if(navigator.canShare && navigator.canShare({ files:[file] })){
-        await navigator.share({ files:[file], title:"Mi progreso de agua", text:"💧 Mi progreso de hidratación de hoy" });
+        await navigator.share({ files:[file], title:"Mi progreso de agua", text:"💧 Mi progreso de hidratación de hoy. ¡Descarga la app y compite conmigo! " + APP_URL });
       } else if(navigator.share){
-        await navigator.share({ title:"Mi progreso de agua", text:"💧 Mi progreso de hidratación de hoy" });
+        await navigator.share({ title:"Mi progreso de agua", text:"💧 Mi progreso de hidratación de hoy. ¡Descarga la app y compite conmigo!", url: APP_URL });
       } else {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url; a.download = "agua-hoy.png";
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(()=> URL.revokeObjectURL(url), 4000);
-        toast("📥 Tarjeta descargada — ya puedes compartirla");
+        toast("📥 Tarjeta descargada — compártela con el enlace " + APP_URL);
       }
     }catch(e){
       if(e && e.name !== "AbortError") toast("No se pudo compartir la tarjeta");
@@ -1659,8 +1829,6 @@
     $("remEnd").value = settings.reminder.end;
     setupReminderUI();
     $("rankingSwitch").classList.toggle("on", settings.ranking.enabled);
-    $("rankingOptions").style.display = settings.ranking.enabled ? "block" : "none";
-    $("rankingUrl").value = settings.ranking.url || "";
     openModal("settingsModal");
   });
   $("settingsSave").addEventListener("click", ()=>{
@@ -1757,46 +1925,146 @@
   $("remStart").addEventListener("input", (e)=>{ settings.reminder.start = Math.max(0, Math.min(23, parseInt(e.target.value,10)||0)); saveSettings(settings); });
   $("remEnd").addEventListener("input", (e)=>{ settings.reminder.end = Math.max(0, Math.min(23, parseInt(e.target.value,10)||23)); saveSettings(settings); });
 
-  const REMINDER_ENCOURAGEMENTS = [
-    "¡Vas muy bien, sigue así!",
-    "Un poco más y lo tienes.",
-    "Tu cuerpo te lo agradece.",
-    "¡Dale otro trago!",
-    "Ya casi está, no te rindas.",
-    "Cada sorbo cuenta."
-  ];
-  const CHIQUITO_REMINDER_PHRASES = [
-    "¡Fistro, pecador de la pradera! Que no se te olvide beber.",
-    "¡Cuidadín, cuidadín! Que te deshidratas.",
-    "¡Ozú! Que te falta agua todavía.",
-    "Como diría un servidor: ¡bebe agua, fistro!",
-    "¡Hasta luego, Lucas! Pero antes, un trago de agua.",
-    "¿Pero tú has bebido agua o no? ¡Cómo puedeh sé!"
-  ];
-  function reminderPhrase(){
-    const pool = settings.chiquito ? CHIQUITO_REMINDER_PHRASES : REMINDER_ENCOURAGEMENTS;
-    return pool[Math.floor(Math.random()*pool.length)];
+  /* ---------------- Recordatorios con gancho (v2.8) ----------------
+     El texto depende de cuánto llevas, la hora y tu racha. Marcadores: {pct} {rest} {vasos} {racha} {nombre}.
+     Modo Chiquito: solo texto con sus coletillas, sin voz clonada. */
+  const REM_TITLES = ["💧 ¡Alerta de sed!", "⏰ Hora del trago", "🚰 Misión agua", "🌊 Tu vaso te echa de menos", "💦 Ping de hidratación"];
+  const REM_TITLES_CHIQUITO = ["¡Fistro! 💧", "¡Cuidadín con la sed!", "¡Pecador de la pradera!", "¡Al ataquerl, con el agua!"];
+
+  const REM_NORMAL = {
+    start: [
+      "Tu vaso lleva horas esperándote. ¿Lo estrenamos ya? 💧",
+      "Reto de 30 segundos: bébete un vaso antes de que se te olvide otra vez.",
+      "El día avanza y tu agua no. Empieza con un vaso ahora mismo.",
+      "Apuesto a que no llegas a 500 ml en la próxima hora. ¿Aceptas? 😏",
+      "Estás al {pct}%. Un vaso ahora y arrancas la remontada.",
+      "Tu cuerpo pide agua y tú le haces ghosting. Respóndele. 💬"
+    ],
+    mid: [
+      "Vas al {pct}%: lo difícil ya está hecho. Remata con un vaso.",
+      "Te quedan {rest} ml, unos {vasos} vasos. Uno ahora y menos tarde.",
+      "Mitad de camino. Quien bebe ahora no corre luego. 🏃",
+      "¿Un vaso rápido? Tu círculo se llena y tú ganas el día.",
+      "Cada vaso es un punto para tu racha. Suma uno ya. ➕",
+      "Quedan {rest} ml entre tú y un día perfecto."
+    ],
+    late: [
+      "Solo {rest} ml para cerrar el círculo. Un vaso y casi lo tienes 🏁",
+      "Estás a {vasos} vasos de ganar el día. No lo dejes a medias.",
+      "Tu círculo está casi cerrado. ¿Lo terminas ahora? ⭕",
+      "{pct}% hecho. Terminar es más fácil que perder lo que has avanzado.",
+      "Última curva: {rest} ml. Tú puedes con eso en dos minutos."
+    ],
+    streak: [
+      "🔥 Tu racha de {racha} días está en juego: te faltan {rest} ml. ¡Sálvala!",
+      "Llevas {racha} días seguidos. No es el día de romperlo: {rest} ml y listo.",
+      "Tu yo de mañana te lo agradecerá: {rest} ml y la racha de {racha} días sigue."
+    ],
+    streakNoFreeze: [
+      "⚠️ Sin comodines: si hoy no llegas, pierdes la racha de {racha} días. Te faltan {rest} ml.",
+      "Hoy no hay red de seguridad: {rest} ml para salvar tus {racha} días de racha."
+    ],
+    streakFreeze: [
+      "Te faltan {rest} ml. Si hoy no llegas se gasta un comodín ❄️: mejor guárdalo.",
+      "Tu racha de {racha} días tiene un comodín de reserva, pero {rest} ml te lo ahorran."
+    ],
+    late_night: [
+      "Quedan pocas horas de hoy y {rest} ml por beber. Ahora o nunca. ⏳",
+      "Cierre del día a la vista: {rest} ml. Un vaso ahora y a dormir con el círculo cerrado."
+    ]
+  };
+  const REM_CHIQUITO = {
+    start: [
+      "¡Pecador de la pradera! Aún no has bebido nada, ¡al ataquerl con un vaso!",
+      "¡Cuidadín, cuidadín! Que te deshidratas, fistro.",
+      "¡Ozú! Ni un trago llevas. ¿Pero tú qué haces, torpedo?",
+      "Estás al {pct}%... ¡cómo puedeh sé! Un vasito ya."
+    ],
+    mid: [
+      "Vas al {pct}%, ¡no puedor parar de admirarte! Remata, fistro.",
+      "Te quedan {rest} ml, unos {vasos} vasos. ¡Te dacuen!",
+      "¡Ese vaso no se bebe solo, pecador! Dale.",
+      "Mitad de camino... ¡Hasta luego, Lucas! Pero antes, un trago."
+    ],
+    late: [
+      "¡Solo {rest} ml, fistro duodenal! Cierra el círculo.",
+      "Casi lo tienes, ¡cobarde el que lo deja ahora! {vasos} vasos y listo.",
+      "¡Ay, qué peligro tiene el agua! Termina los {rest} ml que quedan."
+    ],
+    streak: [
+      "¡Cuidadín! Tu racha de {racha} días en peligro: {rest} ml, ¡al ataquerl!",
+      "¿Romper {racha} días de racha? ¡Qué dices! Bebe {rest} ml, fistro.",
+      "¡Ni se te ocurra, pecador! {racha} días de racha no se tiran. Faltan {rest} ml.",
+      "¡Ozú, qué racha de {racha} días! No la pierdas por {rest} ml, ¡cobarde!"
+    ],
+    streakNoFreeze: [
+      "¡Sin comodines, pecador! Si hoy no llegas, adiós racha de {racha} días. Faltan {rest} ml.",
+    ],
+    streakFreeze: [
+      "Te faltan {rest} ml. Gastar comodín, ¡no puedor! Bebe y sálvalo.",
+      "Tienes comodín, ¡pero guárdalo, fistro! {rest} ml y te lo ahorras."
+    ],
+    late_night: [
+      "¡Hasta luego, Lucas! Se acaba el día y faltan {rest} ml. ¡Un trago, ya!"
+    ]
+  };
+
+  let lastReminderText = "";
+  function pickFrom(arr){
+    if(arr.length === 1) return arr[0];
+    let t, tries = 0;
+    do { t = arr[Math.floor(Math.random()*arr.length)]; tries++; } while(t === lastReminderText && tries < 6);
+    return t;
   }
-  function sendReminder(){
-    if(!("Notification" in window)){ toast(isIOS ? "Instala la app primero para poder notificar" : "Notificaciones no disponibles"); return; }
+  function buildReminder(){
     const day = getDay(todayKey());
     const goal = settings.goal || 2000;
     const pct = Math.min(100, Math.round((day.ml / goal) * 100));
     const remaining = Math.max(0, goal - day.ml);
-    const phrase = reminderPhrase();
-    const body = remaining > 0
-      ? "💧 Vas al " + pct + "% (te quedan " + remaining + " ml). " + phrase
-      : "🎉 ¡Ya has llegado a tu objetivo de hoy! " + phrase;
+    const hour = new Date().getHours();
+    const sim = simulateStreak();
+    const bank = settings.chiquito ? REM_CHIQUITO : REM_NORMAL;
+    const titles = settings.chiquito ? REM_TITLES_CHIQUITO : REM_TITLES;
+    const vars = { pct, rest: remaining, vasos: Math.max(1, Math.ceil(remaining/250)), racha: sim.streak };
+
+    let pool;
+    if(remaining === 0){
+      const done = settings.chiquito ? "¡Objetivo cumplido, fistro! Hoy te lo has ganado." : "🎉 ¡Objetivo de hoy cumplido! Tu círculo está cerrado.";
+      return { title: pickFrom(titles), body: done };
+    }
+    if(sim.streak >= 3 && hour >= 17 && pct < 100){
+      pool = bank.streak.slice();
+      pool = pool.concat(sim.tokens > 0 ? bank.streakFreeze : bank.streakNoFreeze);
+    } else if(hour >= 21){
+      pool = bank.late_night;
+    } else if(pct < 25){
+      pool = bank.start;
+    } else if(pct < 60){
+      pool = bank.mid;
+    } else {
+      pool = bank.late;
+    }
+    let text = pickFrom(pool);
+    lastReminderText = text;
+    text = text.replace(/\{(\w+)\}/g, (m,k)=> (k in vars) ? vars[k] : m);
+    const head = "💧 " + pct + "% · faltan " + remaining + " ml";
+    return { title: pickFrom(titles), body: head + "\n" + text };
+  }
+
+  function sendReminder(){
+    if(!("Notification" in window)){ toast(isIOS ? "Instala la app primero para poder notificar" : "Notificaciones no disponibles"); return; }
+    const msg = buildReminder();
+    const title = msg.title, body = msg.body;
     if(navigator.serviceWorker && navigator.serviceWorker.ready){
       navigator.serviceWorker.ready.then(reg=>{
         if(reg.showNotification){
-          reg.showNotification("Agua", { body, icon:"icons/icon-192.png", badge:"icons/icon-192.png", tag:"agua-reminder" });
+          reg.showNotification(title, { body, icon:"icons/icon-192.png", badge:"icons/icon-192.png", tag:"agua-reminder", renotify:true });
         } else {
-          new Notification("Agua", { body, icon:"icons/icon-192.png" });
+          new Notification(title, { body, icon:"icons/icon-192.png" });
         }
-      }).catch(()=>{ try{ new Notification("Agua", { body, icon:"icons/icon-192.png" }); }catch(e){} });
+      }).catch(()=>{ try{ new Notification(title, { body, icon:"icons/icon-192.png" }); }catch(e){} });
     } else if("Notification" in window && Notification.permission === "granted"){
-      new Notification("Agua", { body, icon:"icons/icon-192.png" });
+      new Notification(title, { body, icon:"icons/icon-192.png" });
     }
   }
   $("remTest").addEventListener("click", sendReminder);
@@ -1833,15 +2101,22 @@
     $("rankingCard").style.display = on ? "block" : "none";
   }
 
+  let rankingPeriod = "day";
+  const RK_CAPTION = { day:"Quién ha bebido más hoy", week:"Esta semana (lunes a hoy)", month:"Este mes" };
+  const RK_EMPTY = { day:"Nadie ha registrado agua hoy todavía.", week:"Nadie ha registrado agua esta semana todavía.", month:"Nadie ha registrado agua este mes todavía." };
   function renderRankingList(rows, err){
     const el = $("rankingList");
     el.innerHTML = "";
+    if(err === "old"){
+      el.innerHTML = '<div class="ranking-empty">El ranking semanal y mensual necesita el script de Google actualizado (Code.gs v2.9). Mientras tanto solo funciona "Hoy".</div>';
+      return;
+    }
     if(err){
       el.innerHTML = '<div class="ranking-empty">No se ha podido cargar el ranking (revisa conexión o la URL en Ajustes).</div>';
       return;
     }
     if(!rows || !rows.length){
-      el.innerHTML = '<div class="ranking-empty">Nadie ha registrado agua hoy todavía.</div>';
+      el.innerHTML = '<div class="ranking-empty">' + RK_EMPTY[rankingPeriod] + '</div>';
       return;
     }
     const medals = ["🥇","🥈","🥉"];
@@ -1851,7 +2126,7 @@
       row.innerHTML =
         '<div class="pos">' + (medals[i] || (i+1)) + '</div>' +
         '<div class="name">' + escapeHtml(r.name) + (r.name === settings.name ? " (tú)" : "") + '</div>' +
-        '<div class="ml">' + (r.ml||0) + ' ml</div>';
+        '<div class="ml">' + (r.ml||0).toLocaleString("es-ES") + ' ml' + (rankingPeriod !== "day" && r.days ? '<small>· ' + r.days + ' d</small>' : '') + '</div>';
       el.appendChild(row);
     });
   }
@@ -1864,14 +2139,43 @@
   function fetchRanking(){
     renderRankingVisibility();
     if(!(settings.ranking.enabled && settings.ranking.url)) return;
-    const url = settings.ranking.url.trim() + (settings.ranking.url.includes("?") ? "&" : "?") + "date=" + encodeURIComponent(todayKey());
-    fetch(url).then(r=>r.json()).then(data=>{
-      if(data && data.ok) renderRankingList(data.ranking, false);
-      else renderRankingList(null, true);
+    // "_" evita cualquier copia en caché; cache:"no-store" fuerza ir a la red.
+    const base = settings.ranking.url.trim();
+    const period = rankingPeriod;
+    let q;
+    if(period === "week"){
+      const now = new Date();
+      const back = (now.getDay() + 6) % 7; // lunes = 0
+      q = "from=" + todayKey(addDays(now, -back)) + "&to=" + todayKey();
+    } else if(period === "month"){
+      const k = todayKey();
+      q = "from=" + k.slice(0,8) + "01&to=" + k;
+    } else {
+      q = "date=" + encodeURIComponent(todayKey());
+    }
+    $("rankingCaption").textContent = RK_CAPTION[period];
+    const url = base + (base.includes("?") ? "&" : "?") + q + "&_=" + Date.now();
+    fetch(url, { cache:"no-store" }).then(r=>r.json()).then(data=>{
+      if(period !== rankingPeriod) return; // el usuario cambió de pestaña mientras cargaba
+      if(period !== "day" && data && data.ok && !(data.version >= 2)){ renderRankingList(null, "old"); return; }
+      if(data && data.ok){
+        renderRankingList(data.ranking, false);
+        const t = new Date().toLocaleTimeString("es-ES", {hour:"2-digit", minute:"2-digit"});
+        $("rankingUpd").textContent = "Actualizado a las " + t;
+      } else renderRankingList(null, true);
     }).catch(()=> renderRankingList(null, true));
   }
   $("rankingRefreshBtn").addEventListener("click", fetchRanking);
+  document.querySelectorAll("#rkTabs .rk-tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      rankingPeriod = btn.dataset.p;
+      document.querySelectorAll("#rkTabs .rk-tab").forEach(b=>b.classList.toggle("on", b === btn));
+      $("rankingList").innerHTML = '<div class="ranking-empty">Cargando…</div>';
+      fetchRanking();
+    });
+  });
 
+  let rankingDirty = false;
   function syncTodayToRanking(){
     if(!(settings.ranking.enabled && settings.ranking.url && settings.name)) return;
     clearTimeout(rankingSyncTimer);
@@ -1883,23 +2187,28 @@
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita el preflight CORS que Apps Script no soporta
         body: JSON.stringify(payload)
-      }).then(()=> fetchRanking()).catch(()=>{});
+      }).then(()=>{ rankingDirty = false; fetchRanking(); })
+        .catch(()=>{ rankingDirty = true; fetchRanking(); }); // sin red: se reintenta al volver
     }, 600);
   }
+
+  // Mantener el ranking al día: al volver a la app, al recuperar conexión y cada 30 s con el Historial abierto.
+  function rankingIsVisible(){ return !document.hidden && $("view-history").classList.contains("active"); }
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden) return;
+    if(getDay(todayKey()).ml > 0) syncTodayToRanking(); // reenvía el total (sobrescribe, no suma) y refresca
+    else if(rankingIsVisible()) fetchRanking();
+  });
+  window.addEventListener("online", ()=>{ if(rankingDirty) syncTodayToRanking(); else if(rankingIsVisible()) fetchRanking(); });
+  setInterval(()=>{ if(rankingDirty) syncTodayToRanking(); else if(rankingIsVisible()) fetchRanking(); }, 30000);
 
   $("rankingSwitch").addEventListener("click", ()=>{
     settings.ranking.enabled = !settings.ranking.enabled;
     saveSettings(settings);
     $("rankingSwitch").classList.toggle("on", settings.ranking.enabled);
-    $("rankingOptions").style.display = settings.ranking.enabled ? "block" : "none";
     renderRankingVisibility();
     if(settings.ranking.enabled && settings.ranking.url) fetchRanking();
   });
-  $("rankingUrl").addEventListener("input", (e)=>{
-    settings.ranking.url = e.target.value.trim();
-    saveSettings(settings);
-  });
-  $("rankingUrl").addEventListener("change", ()=>{ renderRankingVisibility(); if(settings.ranking.enabled) fetchRanking(); });
 
   /* ---------------- Sugerencias por correo ---------------- */
   const SUGGEST_EMAIL = ["eloyhuarte", "gmail.com"].join("@");
