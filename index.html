@@ -521,6 +521,18 @@
   }
   .rk-tab.on{ background:rgba(56,189,248,0.16); border-color:rgba(125,211,252,0.5); color:var(--text); }
   .ranking-row .ml small{ font-weight:600; color:var(--text-dim2); margin-left:4px; }
+
+  /* ---------------- v3.1: mensajes personales ---------------- */
+  .love-banner{
+    display:none; align-items:center; gap:12px; padding:13px 14px; border-radius:18px;
+    background:linear-gradient(135deg, rgba(244,114,182,0.22), rgba(129,140,248,0.12));
+    border:1px solid rgba(244,114,182,0.45); margin-bottom:16px;
+  }
+  .love-banner.show{ display:flex; animation: fadeIn .5s ease; }
+  .love-banner .ic{ font-size:24px; flex:0 0 auto; }
+  .love-banner .txt{ flex:1; font-size:14px; font-weight:700; line-height:1.35; color:var(--text); }
+  .love-banner .txt small{ display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:2px; }
+  .love-banner .love-x{ background:none; border:none; color:var(--text-dim); font-size:16px; cursor:pointer; padding:4px 6px; }
 </style>
 </head>
 <body>
@@ -547,6 +559,12 @@
     <div class="ic">🔄</div>
     <div class="txt"><b>Nueva versión disponible</b>Toca para actualizar la app</div>
     <button class="btn sm" id="updateBtn">Actualizar</button>
+  </div>
+
+  <div class="love-banner" id="loveBanner" role="status">
+    <div class="ic">💙</div>
+    <div class="txt"><small id="loveFrom"></small><span id="loveText"></span></div>
+    <button class="love-x" id="loveClose" aria-label="Cerrar">✕</button>
   </div>
 
   <div class="install-banner" id="installBanner">
@@ -1481,6 +1499,7 @@
     renderAll();
     popRingIcon(useIcon);
     syncTodayToRanking();
+    setTimeout(()=> maybeShowLove(false), 900);
   }
 
   $("addCustomBtn").addEventListener("click", ()=>{
@@ -2048,7 +2067,8 @@
     lastReminderText = text;
     text = text.replace(/\{(\w+)\}/g, (m,k)=> (k in vars) ? vars[k] : m);
     const head = "💧 " + pct + "% · faltan " + remaining + " ml";
-    return { title: pickFrom(titles), body: head + "\n" + text };
+    const personal = (Math.random() < 0.2) ? pickPersonal() : null; // 1 de cada 5 recordatorios, solo si tu nombre tiene mensajes
+    return { title: pickFrom(titles), body: head + "\n" + text + (personal ? "\n" + personal : "") };
   }
 
   function sendReminder(){
@@ -2209,6 +2229,55 @@
     renderRankingVisibility();
     if(settings.ranking.enabled && settings.ranking.url) fetchRanking();
   });
+
+  /* ---------------- Mensajes personales por nombre (v3.1) ----------------
+     Si el nombre de "Tu nombre" coincide (sin mayúsculas ni tildes) con una clave de abajo, a esa persona
+     le sale de vez en cuando un banner con uno de sus mensajes, y alguna vez uno se cuela en un recordatorio.
+     Para añadir a alguien: una línea nueva con su nombre en minúsculas y sin tildes.
+     OJO: el código de la app es público en GitHub, cualquiera que lo abra puede leer estos mensajes. */
+  const PERSONAL_MESSAGES = {
+    "rosana": [
+      "Te quiero mucho 💙",
+      "Qué orgulloso estoy de ti, sigue así 💧",
+      "Eres lo mejor de mi día ✨"
+    ]
+  };
+  const PERSONAL_FROM = "Un mensajito para ti";
+  const LOVE_KEY = "agua:love";
+  const LOVE_MIN_GAP_H = 20;   // como mucho una vez al día
+  const LOVE_CHANCE = 0.35;    // probabilidad en cada ocasión (al abrir, volver a la app o añadir agua)
+  let loveHideTimer = null;
+
+  function normName(n){
+    return String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();
+  }
+  function personalMessages(){ return PERSONAL_MESSAGES[normName(settings.name)] || null; }
+  function pickPersonal(){
+    const list = personalMessages();
+    return list ? list[Math.floor(Math.random()*list.length)] : null;
+  }
+  function showLoveBanner(msg){
+    $("loveFrom").textContent = PERSONAL_FROM;
+    $("loveText").textContent = msg;
+    $("loveBanner").classList.add("show");
+    clearTimeout(loveHideTimer);
+    loveHideTimer = setTimeout(()=> $("loveBanner").classList.remove("show"), 12000);
+  }
+  $("loveClose").addEventListener("click", ()=>{ $("loveBanner").classList.remove("show"); clearTimeout(loveHideTimer); });
+  function maybeShowLove(force){
+    const msg = pickPersonal();
+    if(!msg) return;
+    let last = 0;
+    try{ last = parseInt(localStorage.getItem(LOVE_KEY)||"0",10) || 0; }catch(e){}
+    if(!force){
+      if(Date.now() - last < LOVE_MIN_GAP_H*3600*1000) return;
+      if(Math.random() > LOVE_CHANCE) return;
+    }
+    try{ localStorage.setItem(LOVE_KEY, String(Date.now())); }catch(e){}
+    showLoveBanner(msg);
+  }
+  setTimeout(()=> maybeShowLove(false), 2500);
+  document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) maybeShowLove(false); });
 
   /* ---------------- Sugerencias por correo ---------------- */
   const SUGGEST_EMAIL = ["eloyhuarte", "gmail.com"].join("@");
