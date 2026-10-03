@@ -533,6 +533,51 @@
   .love-banner .txt{ flex:1; font-size:14px; font-weight:700; line-height:1.35; color:var(--text); }
   .love-banner .txt small{ display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:2px; }
   .love-banner .love-x{ background:none; border:none; color:var(--text-dim); font-size:16px; cursor:pointer; padding:4px 6px; }
+
+  /* ---------------- v3.2: efecto de pulsación en TODOS los botones ---------------- */
+  button, .switch, .size-opt, .tab, .rk-tab, .nav-btn, .quick-btn{
+    transition: transform .14s cubic-bezier(.22,1,.36,1), filter .14s ease, background-color .14s ease;
+    touch-action: manipulation;
+  }
+  .is-pressed{ transform:scale(0.93) !important; filter:brightness(1.28) saturate(1.1); }
+  .nav-btn.is-pressed{ transform:scale(0.9) !important; }
+  .switch.is-pressed{ transform:scale(0.92) !important; }
+  button:disabled{ opacity:.65; }
+
+  /* ---------------- v3.2: pantalla "ya estás al día" ---------------- */
+  .uptodate{
+    position:fixed; inset:0; z-index:90; display:none; align-items:center; justify-content:center; padding:24px;
+    background:rgba(4,9,20,0.82); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  }
+  .uptodate.show{ display:flex; animation: fadeIn .3s ease; }
+  .uptodate-card{
+    width:100%; max-width:340px; text-align:center; padding:30px 22px 22px; border-radius:26px;
+    background:linear-gradient(160deg, rgba(56,189,248,0.16), rgba(15,23,42,0.96));
+    border:1px solid rgba(125,211,252,0.35); box-shadow:0 24px 60px rgba(0,0,0,0.55);
+  }
+  @keyframes upPop{ 0%{ transform:scale(0.3); opacity:0; } 60%{ transform:scale(1.12); opacity:1; } 100%{ transform:scale(1); } }
+  .uptodate-check{
+    width:84px; height:84px; margin:0 auto 16px; border-radius:50%; font-size:44px; line-height:84px;
+    background:rgba(74,222,128,0.16); border:2px solid rgba(74,222,128,0.6); box-shadow:0 0 28px rgba(74,222,128,0.35);
+    animation: upPop .6s cubic-bezier(.22,1,.36,1) both;
+  }
+  .uptodate-card h3{ margin:0 0 6px; font-size:21px; }
+  .uptodate-card p{ margin:0 0 18px; color:var(--text-dim); font-size:14px; line-height:1.45; }
+
+  /* ---------------- v3.2: solo en vertical ---------------- */
+  .rotate-lock{
+    display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:14px;
+    background:#060b16; color:#eaf2ff; text-align:center; padding:30px;
+  }
+  .rotate-lock .ph{ font-size:64px; animation: rotatePhone 2.4s ease-in-out infinite; }
+  .rotate-lock b{ font-size:20px; }
+  .rotate-lock span{ font-size:14px; color:#8b9ab3; max-width:260px; line-height:1.45; }
+  @keyframes rotatePhone{ 0%,25%{ transform:rotate(90deg); } 60%,100%{ transform:rotate(0deg); } }
+  /* móviles y tablets (puntero táctil) en horizontal; el ordenador no se ve afectado */
+  @media (orientation: landscape) and (pointer: coarse){
+    .rotate-lock{ display:flex; }
+    body > *:not(.rotate-lock){ visibility:hidden; }
+  }
 </style>
 </head>
 <body>
@@ -873,8 +918,25 @@
     <button class="btn ghost full" id="suggestBtn" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px;">💡 Enviar una sugerencia</button>
 
     <button class="btn danger full" id="resetBtn">Borrar todos los datos</button>
-    <div class="hint" style="text-align:center; margin-top:14px;">Agua · datos guardados solo en este dispositivo</div>
+    <div class="hint" style="text-align:center; margin-top:14px;">Agua <span id="appVerLabel"></span> · datos guardados solo en este dispositivo</div>
   </div>
+</div>
+
+<!-- PANTALLA: YA ESTÁS AL DÍA -->
+<div class="uptodate" id="upToDate" role="dialog" aria-modal="true">
+  <div class="uptodate-card">
+    <div class="uptodate-check">✅</div>
+    <h3>¡Todo al día!</h3>
+    <p>Ya tienes la última versión de Agua<br><b id="upToDateVer"></b></p>
+    <button class="btn full" id="upToDateOk">Genial</button>
+  </div>
+</div>
+
+<!-- AVISO: GIRA EL MÓVIL -->
+<div class="rotate-lock" id="rotateLock">
+  <div class="ph">📱</div>
+  <b>Gira el móvil</b>
+  <span>Agua solo funciona en vertical. Ponlo derecho para seguir.</span>
 </div>
 
 <!-- CONFIRM MODAL -->
@@ -2333,6 +2395,40 @@
   });
   window.addEventListener("appinstalled", ()=> $("installBanner").classList.remove("show"));
 
+  /* ---------------- Efecto de pulsación en todos los botones (v3.2) ----------------
+     :active a veces dura menos de un fotograma en toques rápidos (y en iPhone no funciona sin un
+     listener de touch), así que además se pone la clase .is-pressed un mínimo de 140 ms. */
+  const APP_VERSION = "v3.2";
+  const PRESS_SEL = "button, .switch, .size-opt, .tab, .rk-tab, .nav-btn, .quick-btn";
+  let pressedEl = null, pressedAt = 0;
+  document.addEventListener("pointerdown", (e)=>{
+    const el = e.target && e.target.closest ? e.target.closest(PRESS_SEL) : null;
+    if(!el || el.disabled) return;
+    if(pressedEl) pressedEl.classList.remove("is-pressed");
+    el.classList.add("is-pressed"); pressedEl = el; pressedAt = Date.now();
+  }, true);
+  function releasePress(){
+    if(!pressedEl) return;
+    const el = pressedEl; pressedEl = null;
+    setTimeout(()=> el.classList.remove("is-pressed"), Math.max(0, 140 - (Date.now() - pressedAt)));
+  }
+  ["pointerup","pointercancel","dragend"].forEach(t=> document.addEventListener(t, releasePress, true));
+  document.addEventListener("touchstart", function(){}, { passive:true }); // activa :active en iOS
+  $("appVerLabel").textContent = "· " + APP_VERSION;
+
+  /* ---------------- Solo vertical (v3.2) ---------------- */
+  try{
+    if(screen.orientation && screen.orientation.lock){ screen.orientation.lock("portrait").catch(()=>{}); }
+  }catch(e){}
+
+  /* ---------------- Pantalla "ya estás al día" (v3.2) ---------------- */
+  function showUpToDate(){
+    $("upToDateVer").textContent = "(" + APP_VERSION + ")";
+    $("upToDate").classList.add("show");
+  }
+  $("upToDateOk").addEventListener("click", ()=> $("upToDate").classList.remove("show"));
+  $("upToDate").addEventListener("click", (e)=>{ if(e.target === $("upToDate")) $("upToDate").classList.remove("show"); });
+
   /* ---------------- Service worker + aviso de actualización ---------------- */
   const swSupported = "serviceWorker" in navigator;
   let swReg = null;
@@ -2344,8 +2440,10 @@
 
   function applyUpdate(){
     if(!newWorker) return;
+    const ub = $("updateBtn");
+    ub.disabled = true; ub.textContent = "Actualizando…";
     newWorker.postMessage({ type:"SKIP_WAITING" });
-    hideUpdateBanner();
+    setTimeout(()=>{ hideUpdateBanner(); ub.disabled = false; ub.textContent = "Actualizar"; }, 1500);
   }
 
   function trackInstalling(worker, onFound){
@@ -2361,36 +2459,39 @@
   // Comprueba si hay una versión nueva. manual=true -> la aplica al momento si existe,
   // o avisa de que ya está a la última si no hay ninguna (usado por el botón de Ajustes).
   async function checkForUpdate(manual){
-    if(!swSupported){
-      if(manual) toast("Actualizaciones no disponibles en este navegador");
-      return;
-    }
+    const btn = $("checkUpdateBtn");
+    const label = btn.innerHTML;
+    if(manual){ btn.disabled = true; btn.innerHTML = "⏳ Buscando…"; }
+    const done = ()=>{ if(manual){ btn.disabled = false; btn.innerHTML = label; } };
+    const minWait = manual ? new Promise(r=> setTimeout(r, 900)) : Promise.resolve(); // que se vea que busca
     try{
-      const reg = swReg || await navigator.serviceWorker.getRegistration();
-      if(!reg){
-        if(manual) toast("✅ Estás en la última versión");
+      if(!swSupported){
+        await minWait; done();
+        if(manual) showUpToDate(); // sin service worker no hay versiones en caché: lo que ves es lo último
         return;
       }
+      const reg = swReg || await navigator.serviceWorker.getRegistration();
+      if(!reg){ await minWait; done(); if(manual) showUpToDate(); return; }
       if(reg.waiting && navigator.serviceWorker.controller){
-        newWorker = reg.waiting;
-        showUpdateBanner();
+        newWorker = reg.waiting; showUpdateBanner(); await minWait; done();
         if(manual) applyUpdate();
         return;
       }
       await reg.update();
       await new Promise(r=> setTimeout(r, 800));
+      await minWait; done();
       if(reg.waiting && navigator.serviceWorker.controller){
-        newWorker = reg.waiting;
-        showUpdateBanner();
+        newWorker = reg.waiting; showUpdateBanner();
         if(manual) applyUpdate();
       } else if(reg.installing){
-        if(manual) toast("Comprobando… vuelve a intentarlo en unos segundos");
+        if(manual) toast("Descargando la nueva versión… vuelve a pulsar en unos segundos");
         trackInstalling(reg.installing);
       } else if(manual){
-        toast("✅ Estás en la última versión");
+        showUpToDate();
       }
     }catch(e){
-      if(manual) toast("No se pudo comprobar si hay actualizaciones");
+      done();
+      if(manual) toast("No se pudo comprobar (¿tienes conexión?)");
     }
   }
 
